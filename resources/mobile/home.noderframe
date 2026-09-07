@@ -1,0 +1,30 @@
+html lang="en" data-theme="dark"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"
+    title "Mobile Home"
+    link rel="stylesheet" href="/public/cool.css"
+  body.cool-mobile-body
+    div.cool-mobile-shell
+      header.cool-appbar.cool-safe-top
+        strong "Mobile Home"
+        button.cool-icon-btn type="button" aria-label="Open notifications" "!"
+      main.cool-mobile-content
+        section.cool-stack
+          span.cool-eyebrow "Mobile workspace"
+          h1 "Your mobile UI is independent."
+          p.cool-muted "Edit resources/mobile/home.noderframe without changing the website."
+          div.cool-mobile-grid
+            article.cool-card
+              strong "Fast"
+              p.cool-caption "Responsive, touch-friendly components."
+            article.cool-card
+              strong "Native ready"
+              p.cool-caption "Safe areas and device navigation are included."
+      nav.cool-tabbar aria-label="Main navigation"
+        a href="/" aria-current="page"
+          span.cool-tabbar-icon "⌂"
+          span "Home"
+        a href="/settings"
+          span.cool-tabbar-icon "⚙"
+          span "Settings"

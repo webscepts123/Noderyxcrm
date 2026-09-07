@@ -1,0 +1,65 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Media — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+    script src="/public/cms-admin.js" defer=""
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a.active href="/nodecms/media" "Media"
+        a href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+    main.admin-main
+      header.admin-top
+        div
+          p.kicker "Library"
+          h1 "Media"
+      div.media-add
+        div.panel.dropzone id="media-dropzone"
+          input type="hidden" name="_csrf" value="{{csrfToken}}"
+          input.dz-hidden type="file" id="media-files" accept="image/png,image/jpeg,image/gif,image/webp" multiple=""
+          div.dropzone-body
+            span.dropzone-icon
+            strong "Drag & drop images here"
+            p.muted "Add several at once, or paste an image from your clipboard."
+            button.primary type="button" id="media-browse" "Choose images"
+        form.panel.inline-form method="post" action="/nodecms/media" id="media-url-form"
+          input type="hidden" name="_csrf" value="{{csrfToken}}"
+          input name="title" placeholder="Image title" required=""
+          input type="url" name="url" placeholder="https://example.com/image.jpg" required=""
+          input name="alt" placeholder="Alt text"
+          button.primary type="submit" "Add from URL"
+      section.upload-queue id="upload-queue" hidden=""
+        div.upload-queue-head
+          strong id="upload-queue-title" "Ready to upload"
+          div.upload-queue-actions
+            button.ghost type="button" id="upload-clear" "Clear"
+            button.primary type="button" id="upload-start" "Upload all"
+        div.upload-queue-list id="upload-queue-list"
+      section.media-grid
+        for item in media
+          article.media-item
+            img src="{{item.url}}" alt="{{item.alt}}"
+            strong "{{item.title}}"
+            div.media-url-row
+              input value="{{item.url}}" readonly="" aria-label="Media URL"
+              button.copy-btn type="button" "Copy"
+            form method="post" action="/nodecms/media/{{item.id}}/delete"
+              input type="hidden" name="_csrf" value="{{csrfToken}}"
+              button.danger type="submit" "Delete"

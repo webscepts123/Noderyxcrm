@@ -1,0 +1,56 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Settings — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a.active href="/nodecms/settings" "Settings & SEO"
+    main.admin-main
+      header.admin-top
+        div
+          p.kicker "Configuration"
+          h1 "Site settings"
+      form.panel.stack.settings-form method="post" action="/nodecms/settings"
+        input type="hidden" name="_csrf" value="{{csrfToken}}"
+        label "Site title"
+          input name="siteName" value="{{settings.siteName}}" required=""
+        label "Tagline"
+          input name="tagline" value="{{settings.tagline}}" required=""
+        label "Site description"
+          textarea name="description" rows="4" required="" "{{settings.description}}"
+        input type="hidden" name="theme" value="{{theme.id}}"
+        h2 "Search and sharing"
+        label "Default SEO title"
+          input name="metaTitle" value="{{settings.metaTitle}}" maxlength="70"
+        label "Default meta description"
+          textarea name="metaDescription" rows="3" maxlength="170" "{{settings.metaDescription}}"
+        label "Social sharing image URL"
+          input type="url" name="socialImage" value="{{settings.socialImage}}"
+        label.checkbox-row
+          if settings.indexSite
+            input type="checkbox" name="indexSite" checked=""
+          else
+            input type="checkbox" name="indexSite"
+          span "Allow search engines to index this site"
+        p
+          a href="/nodecms/themes" "Manage active theme: {{theme.name}}"
+        button.primary type="submit" "Save changes"

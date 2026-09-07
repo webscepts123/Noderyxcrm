@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title> — Noderyx CMS</title>
+    <link rel="stylesheet" href="/public/cms.css">
+    <script src="/public/cms-admin.js" defer=""></script>
+  </head>
+  <body class="admin-body">
+    <div class="sidebar">
+      <a href="/nodecms" class="admin-brand">Noderyx CMS</a>
+      <nav class="admin-nav">
+        <a href="/nodecms">Dashboard</a>
+        <p class="nav-section">Content</p>
+        <a href="/nodecms/posts">Posts</a>
+        <a href="/nodecms/posts?type=page">Pages</a>
+        <a href="/nodecms/media">Media</a>
+        <a href="/nodecms/categories">Categories</a>
+        <a href="/nodecms/comments">Comments</a>
+        <p class="nav-section">Appearance</p>
+        <a href="/nodecms/menus">Menus</a>
+        <a href="/nodecms/themes">Themes</a>
+        <a href="/nodecms/plugins">Plugins</a>
+        <p class="nav-section">System</p>
+        <a href="/nodecms/users">Users</a>
+        <a href="/nodecms/backups">Backups</a>
+        <a href="/nodecms/integrations">Integrations</a>
+        <a href="/nodecms/settings">Settings & SEO</a>
+      </nav>
+    </div>
+    <main class="admin-main">
+      <header class="admin-top">
+        <div>
+          <p class="kicker">Editor</p>
+          <h1></h1>
+        </div>
+      </header>
+      <form method="post" action="/nodecms/posts/save" class="editor-grid">
+        <input type="hidden" name="_csrf" value="">
+        <input type="hidden" name="id" value="">
+        <input type="hidden" name="type" value="">
+        <section class="panel stack">
+          <label>Title
+            <input type="text" name="title" value="" required="" class="large-input">
+          </label>
+          <label>Permalink slug
+            <input type="text" name="slug" value="" placeholder="generated-from-title">
+          </label>
+          <label>Excerpt
+            <textarea name="excerpt" rows="3"></textarea>
+          </label>
+          <label>Content
+            <textarea name="content" rows="16" required="" class="editor"></textarea>
+          </label>
+          <h2>Search preview</h2>
+          <label>SEO title
+            <input name="seoTitle" value="" maxlength="70">
+          </label>
+          <label>SEO description
+            <textarea name="seoDescription" rows="3" maxlength="170"></textarea>
+          </label>
+        </section>
+        <div class="panel stack publish-box">
+          <h2>Publish</h2>
+          <label>Status
+            <select name="status">
+              <option value="draft" selected="">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </label>
+          <label>Featured image URL
+            <input type="url" name="featuredImage" value="" placeholder="https://...">
+          </label>
+          <button type="submit" class="primary">Save </button>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>

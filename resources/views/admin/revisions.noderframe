@@ -1,0 +1,42 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Revisions — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a.active href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+    main.admin-main
+      header.admin-top
+        div
+          p.kicker "History"
+          h1 "Revisions for {{post.title}}"
+      section.panel
+        ul.clean-list
+          for revision in revisions
+            li
+              div
+                strong "{{revision.title}}"
+                span "{{revision.createdAt}} · {{revision.status}}"
+              form method="post" action="/nodecms/revisions/{{revision.id}}/restore"
+                input type="hidden" name="_csrf" value="{{csrfToken}}"
+                input type="hidden" name="postId" value="{{revision.postId}}"
+                button.primary type="submit" "Restore"

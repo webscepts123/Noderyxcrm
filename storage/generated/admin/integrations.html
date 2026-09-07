@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Integrations — Noderyx CMS</title>
+    <link rel="stylesheet" href="/public/cms.css">
+    <script src="/public/cms-admin.js" defer=""></script>
+  </head>
+  <body class="admin-body">
+    <div class="sidebar">
+      <a href="/nodecms" class="admin-brand">Noderyx CMS</a>
+      <nav class="admin-nav">
+        <a href="/nodecms">Dashboard</a>
+        <p class="nav-section">Content</p>
+        <a href="/nodecms/posts">Posts</a>
+        <a href="/nodecms/posts?type=page">Pages</a>
+        <a href="/nodecms/media">Media</a>
+        <a href="/nodecms/categories">Categories</a>
+        <a href="/nodecms/comments">Comments</a>
+        <p class="nav-section">Appearance</p>
+        <a href="/nodecms/menus">Menus</a>
+        <a href="/nodecms/themes">Themes</a>
+        <a href="/nodecms/plugins">Plugins</a>
+        <p class="nav-section">System</p>
+        <a href="/nodecms/users">Users</a>
+        <a href="/nodecms/backups">Backups</a>
+        <a href="/nodecms/integrations" class="active">Integrations</a>
+        <a href="/nodecms/settings">Settings & SEO</a>
+      </nav>
+    </div>
+    <main class="admin-main">
+      <header class="admin-top">
+        <div>
+          <p class="kicker">Connections</p>
+          <h1>Integrations</h1>
+        </div>
+      </header>
+      <p class="muted">Select a provider to open its settings. Environment variables set the defaults; anything saved here overrides them. Leave a secret field blank to keep the current value.</p>
+      <form method="post" action="/nodecms/integrations" id="integrations-form" class="stack settings-form">
+        <input type="hidden" name="_csrf" value="">
+        <section data-key="googleDrive" class="integration-group">
+          <button type="button" class="integration-toggle">
+            <span class="integration-name">Google Drive</span>
+            <span class="tag off">Not configured</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="integration-fields">
+            <p class="muted">Paste an OAuth access token with the drive.file scope. Backups upload as JSON files.</p>
+            <label>Access token
+              <input type="password" name="googleDriveToken" placeholder="" autocomplete="off">
+            </label>
+            <label>Folder ID
+              <input name="googleDriveFolder" value="">
+            </label>
+          </div>
+        </section>
+        <section data-key="mediacloudhub" class="integration-group">
+          <button type="button" class="integration-toggle">
+            <span class="integration-name">MediaCloudHub</span>
+            <span class="tag off">Not configured</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="integration-fields">
+            <p class="muted">API key from mediacloudhub.com. Each backup is sent to the MediaCloudHub backups API.</p>
+            <label>API key
+              <input type="password" name="mediacloudhubKey" placeholder="" autocomplete="off">
+            </label>
+            <label>API base URL
+              <input name="mediacloudhubUrl" value="" placeholder="https://mediacloudhub.com/api/v1">
+            </label>
+            <label>Bucket
+              <input name="mediacloudhubBucket" value="">
+            </label>
+          </div>
+        </section>
+        <section data-key="webhook" class="integration-group">
+          <button type="button" class="integration-toggle">
+            <span class="integration-name">Custom webhook</span>
+            <span class="tag off">Not configured</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="integration-fields">
+            <p class="muted">Any HTTPS endpoint. Each backup is POSTed as JSON with an optional shared-secret header.</p>
+            <label>Webhook URL
+              <input name="webhookUrl" value="">
+            </label>
+            <label>Shared secret
+              <input type="password" name="webhookSecret" placeholder="" autocomplete="off">
+            </label>
+          </div>
+        </section>
+        <button type="submit" class="primary">Save integrations</button>
+      </form>
+      <p class="muted">
+        <a href="/nodecms/backups">Back to backups</a>
+      </p>
+    </main>
+  </body>
+</html>

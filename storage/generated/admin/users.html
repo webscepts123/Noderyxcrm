@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Users — Noderyx CMS</title>
+    <link rel="stylesheet" href="/public/cms.css">
+  </head>
+  <body class="admin-body">
+    <div class="sidebar">
+      <a href="/nodecms" class="admin-brand">Noderyx CMS</a>
+      <nav class="admin-nav">
+        <a href="/nodecms">Dashboard</a>
+        <p class="nav-section">Content</p>
+        <a href="/nodecms/posts">Posts</a>
+        <a href="/nodecms/posts?type=page">Pages</a>
+        <a href="/nodecms/media">Media</a>
+        <a href="/nodecms/categories">Categories</a>
+        <a href="/nodecms/comments">Comments</a>
+        <p class="nav-section">Appearance</p>
+        <a href="/nodecms/menus">Menus</a>
+        <a href="/nodecms/themes">Themes</a>
+        <a href="/nodecms/plugins">Plugins</a>
+        <p class="nav-section">System</p>
+        <a href="/nodecms/users" class="active">Users</a>
+        <a href="/nodecms/backups">Backups</a>
+        <a href="/nodecms/integrations">Integrations</a>
+        <a href="/nodecms/settings">Settings & SEO</a>
+      </nav>
+    </div>
+    <main class="admin-main">
+      <header class="admin-top">
+        <div>
+          <p class="kicker">Access</p>
+          <h1>Users and roles</h1>
+        </div>
+      </header>
+      <div class="two-column">
+        <form method="post" action="/nodecms/users" class="panel stack">
+          <input type="hidden" name="_csrf" value="">
+          <h2>Add user</h2>
+          <label>Name
+            <input name="name" required="">
+          </label>
+          <label>Email
+            <input type="email" name="email" required="">
+          </label>
+          <label>Password
+            <input type="password" name="password" minlength="8" required="">
+          </label>
+          <label>Role
+            <select name="role">
+              <option value="Author">Author</option>
+              <option value="Editor">Editor</option>
+              <option value="Administrator">Administrator</option>
+            </select>
+          </label>
+          <button type="submit" class="primary">Create user</button>
+        </form>
+        <section class="panel">
+          <h2>Team</h2>
+          <ul class="clean-list">
+          </ul>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

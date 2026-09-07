@@ -1,0 +1,67 @@
+{
+  "settings": {
+    "siteName": "Noderyx CMS",
+    "tagline": "Ideas, stories, and updates.",
+    "description": "A modern publishing site powered by Noderyx.",
+    "postsPerPage": 9,
+    "theme": "default",
+    "metaTitle": "",
+    "metaDescription": "A modern publishing site powered by Noderyx.",
+    "socialImage": "",
+    "indexSite": true
+  },
+  "users": [
+    {
+      "id": 1,
+      "name": "Administrator",
+      "email": "admin@example.com",
+      "password": "80f23c774ec60db911cea4e8a996cfb8:da23cf81f07d06ca0c5afb1b78b834a38b1143529830946d912acd6a49a23ccc7b1fd0824ef9e849e8b832e7f0c3b15d0d12d1c7fc8e5660280b6feec0a77884",
+      "role": "Administrator",
+      "createdAt": "2026-08-19T19:34:56.730Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "name": "General",
+      "slug": "general",
+      "description": "General updates"
+    }
+  ],
+  "posts": [
+    {
+      "id": 1,
+      "type": "post",
+      "title": "Welcome to Noderyx CMS",
+      "slug": "welcome-to-noderyx-cms",
+      "excerpt": "Your new publishing platform is ready.",
+      "content": "This is your first post. Sign in to the dashboard to edit it, publish new stories, create pages, and customize your site.",
+      "status": "published",
+      "categoryId": 1,
+      "authorId": 1,
+      "featuredImage": "",
+      "createdAt": "2026-08-19T19:34:56.730Z",
+      "updatedAt": "2026-08-19T19:34:56.730Z",
+      "publishedAt": "2026-08-19T19:34:56.730Z"
+    }
+  ],
+  "media": [],
+  "comments": [],
+  "revisions": [],
+  "menus": [
+    {
+      "id": 1,
+      "name": "Primary",
+      "location": "primary",
+      "items": [
+        {
+          "id": 1,
+          "label": "Home",
+          "url": "/",
+          "order": 1
+        }
+      ]
+    }
+  ],
+  "integrations": {}
+}

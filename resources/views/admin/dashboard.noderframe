@@ -1,0 +1,75 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Dashboard — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a.active href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+      form.logout method="post" action="/nodecms/logout"
+        input type="hidden" name="_csrf" value="{{csrfToken}}"
+        button type="submit" "Sign out"
+    main.admin-main
+      header.admin-top
+        div
+          p.kicker "Overview"
+          h1 "Welcome, {{user.name}}"
+        a.button href="/nodecms/posts/new" "+ New post"
+      section.stats
+        article.stat
+          span "Posts"
+          strong "{{counts.posts}}"
+        article.stat
+          span "Pages"
+          strong "{{counts.pages}}"
+        article.stat
+          span "Drafts"
+          strong "{{counts.drafts}}"
+        article.stat
+          span "Media"
+          strong "{{counts.media}}"
+        article.stat
+          span "Comments"
+          strong "{{counts.comments}}"
+        article.stat
+          span "Users"
+          strong "{{counts.users}}"
+      section.panel
+        div.panel-head
+          h2 "Recent content"
+          a href="/nodecms/posts" "View all"
+        div.table-wrap
+          div.admin-table
+            div.table-head
+              div.table-row
+                div.cell.head "Title"
+                div.cell.head "Type"
+                div.cell.head "Status"
+                div.cell.head "Updated"
+            div.table-body
+              for post in posts
+                div.table-row
+                  div.cell
+                    a href="/nodecms/posts/{{post.id}}/edit" "{{post.title}}"
+                  div.cell "{{post.type}}"
+                  div.cell
+                    span.status "{{post.status}}"
+                  div.cell "{{post.updatedAt}}"

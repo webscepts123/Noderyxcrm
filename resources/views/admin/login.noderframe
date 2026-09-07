@@ -1,0 +1,21 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Sign in — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+  body.login-body
+    main.login-card
+      a.login-logo href="/" "Noderyx CMS"
+      h1 "Welcome back"
+      p.muted "Sign in to manage your website."
+      if error
+        div.notice.error "That email or password is incorrect."
+      form.stack method="post" action="/nodecms/login"
+        input type="hidden" name="_csrf" value="{{csrfToken}}"
+        label "Email"
+          input type="email" name="email" required="" autocomplete="email" value="admin@example.com"
+        label "Password"
+          input type="password" name="password" required="" autocomplete="current-password"
+        button.primary type="submit" "Sign in"
+      a.back-link href="/" "← Back to site"

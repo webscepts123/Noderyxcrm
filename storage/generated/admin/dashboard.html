@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard — Noderyx CMS</title>
+    <link rel="stylesheet" href="/public/cms.css">
+  </head>
+  <body class="admin-body">
+    <div class="sidebar">
+      <a href="/nodecms" class="admin-brand">Noderyx CMS</a>
+      <nav class="admin-nav">
+        <a href="/nodecms" class="active">Dashboard</a>
+        <p class="nav-section">Content</p>
+        <a href="/nodecms/posts">Posts</a>
+        <a href="/nodecms/posts?type=page">Pages</a>
+        <a href="/nodecms/media">Media</a>
+        <a href="/nodecms/categories">Categories</a>
+        <a href="/nodecms/comments">Comments</a>
+        <p class="nav-section">Appearance</p>
+        <a href="/nodecms/menus">Menus</a>
+        <a href="/nodecms/themes">Themes</a>
+        <a href="/nodecms/plugins">Plugins</a>
+        <p class="nav-section">System</p>
+        <a href="/nodecms/users">Users</a>
+        <a href="/nodecms/backups">Backups</a>
+        <a href="/nodecms/integrations">Integrations</a>
+        <a href="/nodecms/settings">Settings & SEO</a>
+      </nav>
+      <form method="post" action="/nodecms/logout" class="logout">
+        <input type="hidden" name="_csrf" value="">
+        <button type="submit">Sign out</button>
+      </form>
+    </div>
+    <main class="admin-main">
+      <header class="admin-top">
+        <div>
+          <p class="kicker">Overview</p>
+          <h1>Welcome, </h1>
+        </div>
+        <a href="/nodecms/posts/new" class="button">+ New post</a>
+      </header>
+      <section class="stats">
+        <article class="stat">
+          <span>Posts</span>
+          <strong></strong>
+        </article>
+        <article class="stat">
+          <span>Pages</span>
+          <strong></strong>
+        </article>
+        <article class="stat">
+          <span>Drafts</span>
+          <strong></strong>
+        </article>
+        <article class="stat">
+          <span>Media</span>
+          <strong></strong>
+        </article>
+        <article class="stat">
+          <span>Comments</span>
+          <strong></strong>
+        </article>
+        <article class="stat">
+          <span>Users</span>
+          <strong></strong>
+        </article>
+      </section>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Recent content</h2>
+          <a href="/nodecms/posts">View all</a>
+        </div>
+        <div class="table-wrap">
+          <div class="admin-table">
+            <div class="table-head">
+              <div class="table-row">
+                <div class="cell head">Title</div>
+                <div class="cell head">Type</div>
+                <div class="cell head">Status</div>
+                <div class="cell head">Updated</div>
+              </div>
+            </div>
+            <div class="table-body">
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

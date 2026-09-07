@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Backups — Noderyx CMS</title>
+    <link rel="stylesheet" href="/public/cms.css">
+  </head>
+  <body class="admin-body">
+    <div class="sidebar">
+      <a href="/nodecms" class="admin-brand">Noderyx CMS</a>
+      <nav class="admin-nav">
+        <a href="/nodecms">Dashboard</a>
+        <p class="nav-section">Content</p>
+        <a href="/nodecms/posts">Posts</a>
+        <a href="/nodecms/posts?type=page">Pages</a>
+        <a href="/nodecms/media">Media</a>
+        <a href="/nodecms/categories">Categories</a>
+        <a href="/nodecms/comments">Comments</a>
+        <p class="nav-section">Appearance</p>
+        <a href="/nodecms/menus">Menus</a>
+        <a href="/nodecms/themes">Themes</a>
+        <a href="/nodecms/plugins">Plugins</a>
+        <p class="nav-section">System</p>
+        <a href="/nodecms/users">Users</a>
+        <a href="/nodecms/backups" class="active">Backups</a>
+        <a href="/nodecms/integrations">Integrations</a>
+        <a href="/nodecms/settings">Settings & SEO</a>
+      </nav>
+    </div>
+    <main class="admin-main">
+      <header class="admin-top">
+        <div>
+          <p class="kicker">Recovery</p>
+          <h1>Backups</h1>
+        </div>
+        <form method="post" action="/nodecms/backups" class="backup-create">
+          <input type="hidden" name="_csrf" value="">
+          <select name="destination">
+          </select>
+          <button type="submit" class="primary">Create backup</button>
+        </form>
+      </header>
+      <section class="panel">
+        <h2>Snapshots</h2>
+        <p class="muted">No backups yet. Create one above to capture the current posts, pages, media, users, menus, and settings. A safety snapshot is taken automatically before any restore.</p>
+      </section>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Destinations</h2>
+          <a href="/nodecms/integrations">Manage integrations</a>
+        </div>
+        <ul class="clean-list">
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,66 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Menus — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+    script src="/public/cms-admin.js" defer=""
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Appearance"
+        a.active href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+    main.admin-main
+      header.admin-top
+        div
+          p.kicker "Navigation"
+          h1 "Primary menu"
+      form.menu-builder method="post" action="/nodecms/menus" id="menu-builder"
+        input type="hidden" name="_csrf" value="{{csrfToken}}"
+        input type="hidden" name="items" value=""
+        section.panel.menu-source
+          h2 "Add menu items"
+          div.menu-source-group
+            h3 "Pages"
+            for page in pages
+              button.menu-add-existing type="button" data-label="{{page.title}}" data-url="/page/{{page.slug}}" "+ {{page.title}}"
+          div.menu-source-group
+            h3 "Categories"
+            for category in categories
+              button.menu-add-existing type="button" data-label="{{category.name}}" data-url="/category/{{category.slug}}" "+ {{category.name}}"
+          div.menu-source-group.stack
+            h3 "Custom link"
+            input id="custom-menu-label" placeholder="Link label"
+            input id="custom-menu-url" placeholder="https:// or /page"
+            button.button.secondary id="add-custom-menu-item" type="button" "Add custom link"
+        section.panel.menu-editor
+          div.panel-head
+            div
+              h2 "Primary navigation"
+              p.muted "Drag items to reorder them."
+            span.status id="menu-item-count" "{{menu.items.length}} items"
+          div.menu-sortable id="menu-sortable"
+            for item in menu.items
+              div.menu-item draggable="true"
+                span.drag-handle title="Drag to reorder" "⋮⋮"
+                div.menu-item-fields
+                  input.menu-label value="{{item.label}}" aria-label="Menu label"
+                  input.menu-url value="{{item.url}}" aria-label="Menu URL"
+                button.danger.menu-remove type="button" "Remove"
+          div.menu-empty id="menu-empty" "No menu items yet. Add a page, category, or custom link."
+          button.primary type="submit" "Save menu"

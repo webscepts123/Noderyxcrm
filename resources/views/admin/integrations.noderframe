@@ -1,0 +1,63 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Integrations — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+    script src="/public/cms-admin.js" defer=""
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a href="/nodecms/backups" "Backups"
+        a.active href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+    main.admin-main
+      header.admin-top
+        div
+          p.kicker "Connections"
+          h1 "Integrations"
+      if saved
+        div.notice.success "Integration settings saved."
+      p.muted "Providers are grouped by what they do. Select one to open its settings. Environment variables set the defaults; anything saved here overrides them. Leave a secret field blank to keep the current value."
+      form.stack.settings-form#integrations-form method="post" action="/nodecms/integrations"
+        input type="hidden" name="_csrf" value="{{csrfToken}}"
+        for category in categories
+          div.integration-category
+            div.integration-category-head
+              h2 "{{category.name}}"
+              span.integration-count "{{category.ready}}/{{category.total}} connected"
+            p.muted "{{category.blurb}}"
+            for provider in category.providers
+              section.integration-group data-key="{{provider.id}}"
+                button.integration-toggle type="button"
+                  span.integration-name "{{provider.name}}"
+                  if provider.configured
+                    span.tag.on "Connected"
+                  else
+                    span.tag.off "Not configured"
+                  span.chevron "▾"
+                div.integration-fields
+                  p.muted "{{provider.description}}"
+                  for field in provider.fields
+                    label "{{field.label}}"
+                      if field.secret
+                        input type="password" name="{{field.name}}" placeholder="{{field.placeholder}}" autocomplete="off"
+                      else
+                        input name="{{field.name}}" value="{{field.value}}" placeholder="{{field.placeholder}}"
+        button.primary type="submit" "Save integrations"
+      p.muted
+        a href="/nodecms/backups" "Back to backups"

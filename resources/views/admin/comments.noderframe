@@ -1,0 +1,90 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Comments — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a href="/nodecms/categories" "Categories"
+        a.active href="/nodecms/comments" "Comments"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+    main.admin-main
+      header.admin-top
+        div
+          p.kicker "Discussion"
+          h1 "Comments"
+      div.comment-tabs
+        for tab in tabs
+          if tab.active
+            a.comment-tab.is-active href="{{tab.href}}" "{{tab.label}}"
+          else
+            a.comment-tab href="{{tab.href}}" "{{tab.label}}"
+      if emptyState
+        div.panel.comment-empty
+          strong "{{emptyTitle}}"
+          p.muted "{{emptyHint}}"
+          a.button href="/nodecms/posts" "View posts"
+      else
+        section.comment-list
+          for comment in threads
+            article.comment-card
+              div.comment-line
+                div.comment-who
+                  strong.comment-author "{{comment.name}}"
+                  span.comment-meta "on {{comment.postTitle}} · {{comment.when}}"
+                span.status data-status="{{comment.status}}" "{{comment.status}}"
+              p.comment-body "{{comment.content}}"
+              div.comment-actions
+                if comment.status != "approved"
+                  form method="post" action="/nodecms/comments/{{comment.id}}/moderate"
+                    input type="hidden" name="_csrf" value="{{csrfToken}}"
+                    input type="hidden" name="status" value="approved"
+                    input type="hidden" name="redirect" value="/nodecms/comments?filter={{filter}}"
+                    button.link-btn type="submit" "Approve"
+                if comment.status != "pending"
+                  form method="post" action="/nodecms/comments/{{comment.id}}/moderate"
+                    input type="hidden" name="_csrf" value="{{csrfToken}}"
+                    input type="hidden" name="status" value="pending"
+                    input type="hidden" name="redirect" value="/nodecms/comments?filter={{filter}}"
+                    button.link-btn type="submit" "Unapprove"
+                if comment.status != "spam"
+                  form method="post" action="/nodecms/comments/{{comment.id}}/moderate"
+                    input type="hidden" name="_csrf" value="{{csrfToken}}"
+                    input type="hidden" name="status" value="spam"
+                    input type="hidden" name="redirect" value="/nodecms/comments?filter={{filter}}"
+                    button.link-btn.is-danger type="submit" "Spam"
+                form method="post" action="/nodecms/comments/{{comment.id}}/delete"
+                  input type="hidden" name="_csrf" value="{{csrfToken}}"
+                  input type="hidden" name="redirect" value="/nodecms/comments?filter={{filter}}"
+                  button.link-btn.is-danger type="submit" "Delete"
+              for reply in comment.replies
+                div.comment-reply
+                  div.comment-line
+                    strong.comment-author "{{reply.name}}"
+                    span.comment-meta "staff reply · {{reply.when}}"
+                  p.comment-body "{{reply.content}}"
+                  form method="post" action="/nodecms/comments/{{reply.id}}/delete"
+                    input type="hidden" name="_csrf" value="{{csrfToken}}"
+                    input type="hidden" name="redirect" value="/nodecms/comments?filter={{filter}}"
+                    button.link-btn.is-danger type="submit" "Delete reply"
+              form.comment-reply-form method="post" action="/nodecms/comments/{{comment.id}}/reply"
+                input type="hidden" name="_csrf" value="{{csrfToken}}"
+                input type="hidden" name="redirect" value="/nodecms/comments?filter={{filter}}"
+                textarea name="content" rows="2" placeholder="Write a reply…" required=""
+                button.primary type="submit" "Reply"

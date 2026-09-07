@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Settings — Noderyx CMS</title>
+    <link rel="stylesheet" href="/public/cms.css">
+  </head>
+  <body class="admin-body">
+    <div class="sidebar">
+      <a href="/nodecms" class="admin-brand">Noderyx CMS</a>
+      <nav class="admin-nav">
+        <a href="/nodecms">Dashboard</a>
+        <p class="nav-section">Content</p>
+        <a href="/nodecms/posts">Posts</a>
+        <a href="/nodecms/posts?type=page">Pages</a>
+        <a href="/nodecms/media">Media</a>
+        <a href="/nodecms/categories">Categories</a>
+        <a href="/nodecms/comments">Comments</a>
+        <p class="nav-section">Appearance</p>
+        <a href="/nodecms/menus">Menus</a>
+        <a href="/nodecms/themes">Themes</a>
+        <a href="/nodecms/plugins">Plugins</a>
+        <p class="nav-section">System</p>
+        <a href="/nodecms/users">Users</a>
+        <a href="/nodecms/backups">Backups</a>
+        <a href="/nodecms/integrations">Integrations</a>
+        <a href="/nodecms/settings" class="active">Settings & SEO</a>
+      </nav>
+    </div>
+    <main class="admin-main">
+      <header class="admin-top">
+        <div>
+          <p class="kicker">Configuration</p>
+          <h1>Site settings</h1>
+        </div>
+      </header>
+      <form method="post" action="/nodecms/settings" class="panel stack settings-form">
+        <input type="hidden" name="_csrf" value="">
+        <label>Site title
+          <input name="siteName" value="" required="">
+        </label>
+        <label>Tagline
+          <input name="tagline" value="" required="">
+        </label>
+        <label>Site description
+          <textarea name="description" rows="4" required=""></textarea>
+        </label>
+        <input type="hidden" name="theme" value="">
+        <h2>Search and sharing</h2>
+        <label>Default SEO title
+          <input name="metaTitle" value="" maxlength="70">
+        </label>
+        <label>Default meta description
+          <textarea name="metaDescription" rows="3" maxlength="170"></textarea>
+        </label>
+        <label>Social sharing image URL
+          <input type="url" name="socialImage" value="">
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" name="indexSite">
+          <span>Allow search engines to index this site</span>
+        </label>
+        <p>
+          <a href="/nodecms/themes">Manage active theme: </a>
+        </p>
+        <button type="submit" class="primary">Save changes</button>
+      </form>
+    </main>
+  </body>
+</html>

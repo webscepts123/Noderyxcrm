@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Media — Noderyx CMS</title>
+    <link rel="stylesheet" href="/public/cms.css">
+    <script src="/public/cms-admin.js" defer=""></script>
+  </head>
+  <body class="admin-body">
+    <div class="sidebar">
+      <a href="/nodecms" class="admin-brand">Noderyx CMS</a>
+      <nav class="admin-nav">
+        <a href="/nodecms">Dashboard</a>
+        <p class="nav-section">Content</p>
+        <a href="/nodecms/posts">Posts</a>
+        <a href="/nodecms/posts?type=page">Pages</a>
+        <a href="/nodecms/media" class="active">Media</a>
+        <a href="/nodecms/categories">Categories</a>
+        <a href="/nodecms/comments">Comments</a>
+        <p class="nav-section">Appearance</p>
+        <a href="/nodecms/menus">Menus</a>
+        <a href="/nodecms/themes">Themes</a>
+        <a href="/nodecms/plugins">Plugins</a>
+        <p class="nav-section">System</p>
+        <a href="/nodecms/users">Users</a>
+        <a href="/nodecms/backups">Backups</a>
+        <a href="/nodecms/integrations">Integrations</a>
+        <a href="/nodecms/settings">Settings & SEO</a>
+      </nav>
+    </div>
+    <main class="admin-main">
+      <header class="admin-top">
+        <div>
+          <p class="kicker">Library</p>
+          <h1>Media</h1>
+        </div>
+      </header>
+      <form method="post" action="/nodecms/media" class="panel inline-form">
+        <input type="hidden" name="_csrf" value="">
+        <input name="title" placeholder="Image title" required="">
+        <input type="url" name="url" placeholder="https://example.com/image.jpg" required="">
+        <input name="alt" placeholder="Alt text">
+        <button type="submit" class="primary">Add media</button>
+      </form>
+      <form id="media-upload-form" action="/nodecms/media" class="panel inline-form">
+        <input type="hidden" name="_csrf" value="">
+        <input type="file" name="file" accept="image/png,image/jpeg,image/gif,image/webp" required="">
+        <input name="title" placeholder="Image title">
+        <input name="alt" placeholder="Alt text">
+        <button type="submit" class="primary">Upload image</button>
+      </form>
+      <section class="media-grid">
+      </section>
+    </main>
+  </body>
+</html>

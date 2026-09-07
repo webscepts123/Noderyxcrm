@@ -1,0 +1,66 @@
+{
+  "name": "create-noderyxcrm",
+  "version": "0.1.0",
+  "description": "Scaffold a new Noderyx CRM/CMS project built on the Noderyx Framework.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "create-noderyxcrm": "bin/nodecms.js",
+    "nodecms": "bin/nodecms.js"
+  },
+  "files": [
+    "bin",
+    "app",
+    "database",
+    "deployment",
+    "packages",
+    "public",
+    "resources",
+    "routes",
+    "tests",
+    "server.js",
+    "noderyx.config.js",
+    ".env.example",
+    "Dockerfile",
+    "Procfile"
+  ],
+  "keywords": [
+    "noderyx",
+    "crm",
+    "cms",
+    "scaffold",
+    "starter",
+    "create"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "noderyx-framework serve --watch",
+    "live": "noderyx-framework live",
+    "start": "node server.js",
+    "framework:update": "noderyx-framework update",
+    "qa": "noderyx-framework qa",
+    "build": "noderyx-framework build resources/views storage/generated",
+    "cpanel:build": "noderyx-framework cpanel:build",
+    "build:native": "noderyx-framework build:native --views=resources/mobile",
+    "mobile:builder": "noderyx-framework mobile:builder",
+    "native:init": "noderyx-framework native:init",
+    "native:android": "noderyx-framework native:run android",
+    "native:ios": "noderyx-framework native:run ios",
+    "native:start": "noderyx-framework native:start",
+    "build:mobile": "noderyx-framework build:mobile",
+    "mobile:init": "noderyx-framework mobile:init",
+    "mobile:android": "noderyx-framework mobile:run android",
+    "mobile:ios": "noderyx-framework mobile:run ios",
+    "editor:install": "noderyx-framework editor:install",
+    "migrate": "noderyx-framework migrate",
+    "seed": "node database/seeders/AdminSeeder.js",
+    "cms:new": "node bin/nodecms.js create",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "adm-zip": "^0.6.0",
+    "noderyx-framework": ">=0.7.1 <1.0.0"
+  }
+}

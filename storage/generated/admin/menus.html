@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Menus — Noderyx CMS</title>
+    <link rel="stylesheet" href="/public/cms.css">
+    <script src="/public/cms-admin.js" defer=""></script>
+  </head>
+  <body class="admin-body">
+    <div class="sidebar">
+      <a href="/nodecms" class="admin-brand">Noderyx CMS</a>
+      <nav class="admin-nav">
+        <a href="/nodecms">Dashboard</a>
+        <p class="nav-section">Content</p>
+        <a href="/nodecms/posts">Posts</a>
+        <a href="/nodecms/posts?type=page">Pages</a>
+        <a href="/nodecms/media">Media</a>
+        <a href="/nodecms/categories">Categories</a>
+        <a href="/nodecms/comments">Comments</a>
+        <p class="nav-section">Appearance</p>
+        <a href="/nodecms/menus" class="active">Menus</a>
+        <a href="/nodecms/themes">Themes</a>
+        <a href="/nodecms/plugins">Plugins</a>
+        <p class="nav-section">System</p>
+        <a href="/nodecms/users">Users</a>
+        <a href="/nodecms/backups">Backups</a>
+        <a href="/nodecms/integrations">Integrations</a>
+        <a href="/nodecms/settings">Settings & SEO</a>
+      </nav>
+    </div>
+    <main class="admin-main">
+      <header class="admin-top">
+        <div>
+          <p class="kicker">Navigation</p>
+          <h1>Primary menu</h1>
+        </div>
+      </header>
+      <form method="post" action="/nodecms/menus" id="menu-builder" class="menu-builder">
+        <input type="hidden" name="_csrf" value="">
+        <input type="hidden" name="items" value="">
+        <section class="panel menu-source">
+          <h2>Add menu items</h2>
+          <div class="menu-source-group">
+            <h3>Pages</h3>
+          </div>
+          <div class="menu-source-group">
+            <h3>Categories</h3>
+          </div>
+          <div class="menu-source-group stack">
+            <h3>Custom link</h3>
+            <input id="custom-menu-label" placeholder="Link label">
+            <input id="custom-menu-url" placeholder="https:// or /page">
+            <button id="add-custom-menu-item" type="button" class="button secondary">Add custom link</button>
+          </div>
+        </section>
+        <section class="panel menu-editor">
+          <div class="panel-head">
+            <div>
+              <h2>Primary navigation</h2>
+              <p class="muted">Drag items to reorder them.</p>
+            </div>
+            <span id="menu-item-count" class="status"> items</span>
+          </div>
+          <div id="menu-sortable" class="menu-sortable">
+          </div>
+          <div id="menu-empty" class="menu-empty">No menu items yet. Add a page, category, or custom link.</div>
+          <button type="submit" class="primary">Save menu</button>
+        </section>
+      </form>
+    </main>
+  </body>
+</html>

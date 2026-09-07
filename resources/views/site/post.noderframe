@@ -1,0 +1,77 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    meta name="description" content="{{post.seoDescription}}"
+    meta name="robots" content="{{settings.robots}}"
+    meta property="og:image" content="{{post.featuredImage}}"
+    title "{{post.seoTitle}}"
+    link rel="stylesheet" href="{{theme.stylesheet}}"
+  body.site-body
+    header.site-header
+      div.wrap.header-row
+        a.brand href="/" "{{settings.siteName}}"
+        nav.site-nav
+          for item in navigation
+            a href="{{item.url}}" "{{item.label}}"
+          if user
+            a href="/nodecms" "Dashboard"
+    main.article-main
+      article.article-wrap
+        a.category href="/category/{{post.categorySlug}}" "{{post.category}}"
+        h1 "{{post.title}}"
+        p.article-lead "{{post.excerpt}}"
+        div.meta "{{post.date}} · By {{post.author}}"
+        if post.featuredImage
+          img.article-image src="{{post.featuredImage}}" alt="{{post.title}}"
+        div.article-content
+          if post.blocks
+            for block in post.blocks
+              if block.type == "hero"
+                section.content-hero
+                  h2 "{{block.text}}"
+                  p "{{block.alt}}"
+              if block.type == "heading"
+                h2 "{{block.text}}"
+              if block.type == "text"
+                p "{{block.text}}"
+              if block.type == "image"
+                img.content-image src="{{block.url}}" alt="{{block.alt}}"
+              if block.type == "button"
+                p
+                  a.button href="{{block.url}}" "{{block.text}}"
+              if block.type == "columns"
+                div.content-columns
+                  p "{{block.text}}"
+                  p "{{block.alt}}"
+              if block.type == "quote"
+                div.content-quote
+                  p "{{block.text}}"
+                  span "{{block.alt}}"
+              if block.type == "divider"
+                div.content-divider
+              if block.type == "spacer"
+                div.content-spacer
+          else
+            p "{{post.content}}"
+        if allowComments
+          section.comments-section
+            h2 "Comments"
+            if commentSent
+              div.notice "Your comment is awaiting moderation."
+            for comment in comments
+              article.comment
+                strong "{{comment.name}}"
+                p "{{comment.content}}"
+            form.panel.stack method="post" action="/post/{{post.slug}}/comments"
+              input type="hidden" name="_csrf" value="{{csrfToken}}"
+              h2 "Leave a comment"
+              label "Name"
+                input name="name" required=""
+              label "Email"
+                input type="email" name="email" required=""
+              label "Comment"
+                textarea name="content" rows="5" required=""
+              button.primary type="submit" "Submit comment"
+    footer.site-footer
+      div.wrap "© {{settings.siteName}} · Powered by Noderyx CMS"

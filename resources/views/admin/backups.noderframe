@@ -1,0 +1,81 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Backups — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a.active href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+    main.admin-main
+      header.admin-top
+        div
+          p.kicker "Recovery"
+          h1 "Backups"
+        form.backup-create method="post" action="/nodecms/backups"
+          input type="hidden" name="_csrf" value="{{csrfToken}}"
+          select name="destination"
+            for destination in destinations
+              if destination.configured
+                option value="{{destination.id}}" "{{destination.label}}"
+          button.primary type="submit" "Create backup"
+      if created
+        div.notice.success "Backup created."
+      if pushed
+        div.notice.success "Copied off-site to {{pushed}}."
+      if restored
+        div.notice.success "Backup restored. Reload other open tabs to see the change."
+      if deleted
+        div.notice.info "Backup deleted."
+      if error
+        div.notice.error "{{error}}"
+      section.panel
+        h2 "Snapshots"
+        if backups
+          ul.clean-list
+            for backup in backups
+              li
+                div
+                  strong "{{backup.name}}"
+                  span "{{backup.createdLabel}} · {{backup.sizeLabel}}"
+                div.actions
+                  a href="/nodecms/backups/{{backup.name}}/download" "Download"
+                  form method="post" action="/nodecms/backups/{{backup.name}}/restore"
+                    input type="hidden" name="_csrf" value="{{csrfToken}}"
+                    button.linklike type="submit" "Restore"
+                  form method="post" action="/nodecms/backups/{{backup.name}}/delete"
+                    input type="hidden" name="_csrf" value="{{csrfToken}}"
+                    button.danger type="submit" "Delete"
+        else
+          p.muted "No backups yet. Create one above to capture the current posts, pages, media, users, menus, and settings. A safety snapshot is taken automatically before any restore."
+      section.panel
+        div.panel-head
+          h2 "Destinations"
+          a href="/nodecms/integrations" "Manage integrations"
+        ul.clean-list
+          for destination in destinations
+            li
+              div
+                strong "{{destination.label}}"
+                span "{{destination.hint}}"
+              if destination.configured
+                span.tag.on "Connected"
+              else
+                span.tag.off "Not configured"

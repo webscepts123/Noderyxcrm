@@ -1,0 +1,49 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Categories — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a.active href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+    main.admin-main
+      header.admin-top
+        div
+          p.kicker "Organization"
+          h1 "Categories"
+      div.two-column
+        form.panel.stack method="post" action="/nodecms/categories"
+          input type="hidden" name="_csrf" value="{{csrfToken}}"
+          h2 "Add category"
+          label "Name"
+            input name="name" required=""
+          label "Slug"
+            input name="slug"
+          label "Description"
+            textarea name="description" rows="4"
+          button.primary type="submit" "Add category"
+        section.panel
+          h2 "All categories"
+          ul.clean-list
+            for category in categories
+              li
+                strong "{{category.name}}"
+                span "{{category.description}}"

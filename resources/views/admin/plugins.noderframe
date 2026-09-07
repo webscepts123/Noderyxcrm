@@ -1,0 +1,50 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Plugins — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+    script src="/public/cms-admin.js" defer=""
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a.active href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+    main.admin-main
+      header.admin-top
+        div
+          p.kicker "Extensions"
+          h1 "Plugins"
+      form.panel.upload-panel.archive-upload-form action="/nodecms/plugins/upload" data-redirect="/nodecms/plugins"
+        input type="hidden" name="_csrf" value="{{csrfToken}}"
+        div
+          h2 "Upload plugin"
+          p.muted "ZIP must contain package.json. Uploaded plugins load after restarting the app."
+        input type="file" name="archive" accept=".zip,application/zip" required=""
+        button.primary type="submit" "Install plugin"
+        span.upload-message aria-live="polite"
+      section.plugin-grid
+        for plugin in plugins
+          article.panel.plugin-card
+            div.plugin-head
+              div.plugin-icon "N"
+              div
+                h2 "{{plugin.name}}"
+                span.status "{{plugin.status}}"
+            p.muted "{{plugin.description}}"
+            span.plugin-meta "{{plugin.source}} plugin · {{plugin.id}}"

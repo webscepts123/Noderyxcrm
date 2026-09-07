@@ -1,0 +1,45 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    meta name="description" content="{{settings.metaDescription}}"
+    meta name="robots" content="{{settings.robots}}"
+    meta property="og:image" content="{{settings.socialImage}}"
+    title "{{settings.metaTitle}}"
+    link rel="stylesheet" href="{{theme.stylesheet}}"
+  body.site-body
+    header.site-header
+      div.wrap.header-row
+        a.brand href="/" "{{settings.siteName}}"
+        nav.site-nav
+          for item in navigation
+            a href="{{item.url}}" "{{item.label}}"
+          if user
+            a href="/nodecms" "Dashboard"
+    main
+      section.hero
+        div.wrap
+          span.eyebrow "Noderyx publishing"
+          if categoryTitle
+            h1 "{{categoryTitle}}"
+          else
+            h1 "{{settings.tagline}}"
+          p "{{settings.description}}"
+      section.wrap.content-section
+        div.section-heading
+          h2 "Latest stories"
+          span "Thoughts, guides and news"
+        div.post-grid
+          for post in posts
+            article.post-card
+              if post.featuredImage
+                a.media href="/post/{{post.slug}}"
+                  img src="{{post.featuredImage}}" alt="{{post.title}}"
+              div.card-copy
+                a.category href="/category/{{post.categorySlug}}" "{{post.category}}"
+                h3
+                  a href="/post/{{post.slug}}" "{{post.title}}"
+                p "{{post.excerpt}}"
+                div.meta "{{post.date}} · {{post.author}}"
+    footer.site-footer
+      div.wrap "© {{settings.siteName}} · Powered by Noderyx CMS"

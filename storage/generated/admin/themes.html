@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Themes — Noderyx CMS</title>
+    <link rel="stylesheet" href="/public/cms.css">
+    <script src="/public/cms-admin.js" defer=""></script>
+  </head>
+  <body class="admin-body">
+    <div class="sidebar">
+      <a href="/nodecms" class="admin-brand">Noderyx CMS</a>
+      <nav class="admin-nav">
+        <a href="/nodecms">Dashboard</a>
+        <p class="nav-section">Content</p>
+        <a href="/nodecms/posts">Posts</a>
+        <a href="/nodecms/posts?type=page">Pages</a>
+        <a href="/nodecms/media">Media</a>
+        <a href="/nodecms/categories">Categories</a>
+        <a href="/nodecms/comments">Comments</a>
+        <p class="nav-section">Appearance</p>
+        <a href="/nodecms/menus">Menus</a>
+        <a href="/nodecms/themes" class="active">Themes</a>
+        <a href="/nodecms/plugins">Plugins</a>
+        <p class="nav-section">System</p>
+        <a href="/nodecms/users">Users</a>
+        <a href="/nodecms/backups">Backups</a>
+        <a href="/nodecms/integrations">Integrations</a>
+        <a href="/nodecms/settings">Settings & SEO</a>
+      </nav>
+    </div>
+    <main class="admin-main">
+      <header class="admin-top">
+        <div>
+          <p class="kicker">Appearance</p>
+          <h1>Themes</h1>
+        </div>
+      </header>
+      <form action="/nodecms/themes/upload" data-redirect="/nodecms/themes" class="panel upload-panel archive-upload-form">
+        <input type="hidden" name="_csrf" value="">
+        <div>
+          <h2>Upload theme</h2>
+          <p class="muted">ZIP must contain theme.json and style.css (maximum 8 MB).</p>
+        </div>
+        <input type="file" name="archive" accept=".zip,application/zip" required="">
+        <button type="submit" class="primary">Install theme</button>
+        <span aria-live="polite" class="upload-message"></span>
+      </form>
+      <section class="theme-grid">
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,53 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Themes — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+    script src="/public/cms-admin.js" defer=""
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a.active href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+    main.admin-main
+      header.admin-top
+        div
+          p.kicker "Appearance"
+          h1 "Themes"
+      form.panel.upload-panel.archive-upload-form action="/nodecms/themes/upload" data-redirect="/nodecms/themes"
+        input type="hidden" name="_csrf" value="{{csrfToken}}"
+        div
+          h2 "Upload theme"
+          p.muted "ZIP must contain theme.json and style.css (maximum 8 MB)."
+        input type="file" name="archive" accept=".zip,application/zip" required=""
+        button.primary type="submit" "Install theme"
+        span.upload-message aria-live="polite"
+      section.theme-grid
+        for item in themes
+          article.panel.theme-card
+            div.theme-preview "Aa"
+            h2 "{{item.name}}"
+            p.muted "{{item.description}}"
+            if item.id == activeTheme
+              span.status "Active"
+            else
+              form method="post" action="/nodecms/themes/activate"
+                input type="hidden" name="_csrf" value="{{csrfToken}}"
+                input type="hidden" name="theme" value="{{item.id}}"
+                button.primary type="submit" "Activate"

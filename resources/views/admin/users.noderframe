@@ -1,0 +1,61 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Users — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a.active href="/nodecms/users" "Users"
+        a href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+    main.admin-main
+      header.admin-top
+        div
+          p.kicker "Access"
+          h1 "Users and roles"
+      if error
+        div.notice.error "That email is already registered."
+      div.two-column
+        form.panel.stack method="post" action="/nodecms/users"
+          input type="hidden" name="_csrf" value="{{csrfToken}}"
+          h2 "Add user"
+          label "Name"
+            input name="name" required=""
+          label "Email"
+            input type="email" name="email" required=""
+          label "Password"
+            input type="password" name="password" minlength="8" required=""
+          label "Role"
+            select name="role"
+              option value="Author" "Author"
+              option value="Editor" "Editor"
+              option value="Administrator" "Administrator"
+          button.primary type="submit" "Create user"
+        section.panel
+          h2 "Team"
+          ul.clean-list
+            for item in users
+              li
+                div
+                  strong "{{item.name}}"
+                  span "{{item.email}} · {{item.role}}"
+                if item.id != user.id
+                  form method="post" action="/nodecms/users/{{item.id}}/delete"
+                    input type="hidden" name="_csrf" value="{{csrfToken}}"
+                    button.danger type="submit" "Delete"

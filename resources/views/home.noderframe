@@ -1,0 +1,14 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    meta name="description" content="{{description}}"
+    link rel="canonical" href="{{siteUrl}}"
+    title "{{siteName}}"
+    link rel="stylesheet" href="/public/cool.css"
+  body
+    main.cool-container.cool-welcome.cool-stack
+      span.cool-badge "Noderyx Framework"
+      h1 "{{siteName}}"
+      p.cool-muted "{{description}}"
+    script src="/public/untitled-live.js" defer
