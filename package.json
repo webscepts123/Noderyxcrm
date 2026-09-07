@@ -1,6 +1,6 @@
 {
   "name": "create-noderyxcrm",
-  "version": "0.1.0",
+  "version": "1.0.2",
   "description": "Scaffold a new Noderyx CRM/CMS project built on the Noderyx Framework.",
   "type": "module",
   "license": "MIT",
