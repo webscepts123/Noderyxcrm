@@ -286,16 +286,15 @@ cleanup_release() {
 
 # Every protected path, as a list of paths relative to the application root.
 # KEEP is expanded the long way so an empty array does not trip set -u on the
-# bash 4.2 that older CloudLinux images still ship.
-protected_paths() {
-  printf '%s\n' "${PRESERVE[@]}" ${KEEP[@]+"${KEEP[@]}"} "${SKIP[@]}"
-}
-
+# bash 4.2 that older CloudLinux images still ship. Iterated directly (never
+# through a process substitution) because jailshells such as CageFS often
+# have no /dev/fd, which makes `< <(...)` fail with "No such file or
+# directory" on every single path check.
 is_preserved() {
   local candidate="$1" path
-  while read -r path; do
+  for path in "${PRESERVE[@]}" ${KEEP[@]+"${KEEP[@]}"} "${SKIP[@]}"; do
     [ "${path%/}" = "$candidate" ] && return 0
-  done < <(protected_paths)
+  done
   return 1
 }
 
@@ -303,9 +302,9 @@ is_preserved() {
 # to be copied entry by entry rather than replaced wholesale.
 holds_preserved() {
   local candidate="$1" path
-  while read -r path; do
+  for path in "${PRESERVE[@]}" ${KEEP[@]+"${KEEP[@]}"} "${SKIP[@]}"; do
     case "${path%/}" in "$candidate"/*) return 0 ;; esac
-  done < <(protected_paths)
+  done
   return 1
 }
 
