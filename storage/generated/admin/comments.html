@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Comments — Noderyx CMS</title>
     <link rel="stylesheet" href="/public/cms.css">
+    <link rel="stylesheet" href="/public/cms-workspace.css">
+    <script src="/public/cms-admin.js" defer=""></script>
   </head>
   <body class="admin-body">
     <div class="sidebar">
@@ -17,6 +19,9 @@
         <a href="/nodecms/media">Media</a>
         <a href="/nodecms/categories">Categories</a>
         <a href="/nodecms/comments" class="active">Comments</a>
+        <p class="nav-section">Workspace</p>
+        <a href="/nodecms/workspace/tasks">Editorial tasks</a>
+        <a href="/nodecms/workspace/notes">Team notes</a>
         <p class="nav-section">Appearance</p>
         <a href="/nodecms/menus">Menus</a>
         <a href="/nodecms/themes">Themes</a>
@@ -27,15 +32,28 @@
         <a href="/nodecms/integrations">Integrations</a>
         <a href="/nodecms/settings">Settings & SEO</a>
       </nav>
+      <form method="post" action="/nodecms/logout" class="logout">
+        <input type="hidden" name="_csrf" value="">
+        <button type="submit">Sign out</button>
+      </form>
     </div>
-    <main class="admin-main">
+    <a href="#workspace" class="skip-link">Skip to content</a>
+    <header class="cms-toolbar">
+      <a href="/" class="toolbar-site">N / Visit site ↗</a>
+      <span class="toolbar-label">Administration</span>
+      <a href="/nodecms/posts/new" class="toolbar-new">+ New content</a>
+      <span class="toolbar-user"></span>
+    </header>
+    <main id="workspace" class="admin-main">
       <header class="admin-top">
         <div>
           <p class="kicker">Discussion</p>
           <h1>Comments</h1>
         </div>
       </header>
-      <section class="panel">
+      <div class="comment-tabs">
+      </div>
+      <section class="comment-list">
       </section>
     </main>
   </body>

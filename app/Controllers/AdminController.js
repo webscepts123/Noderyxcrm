@@ -13,10 +13,50 @@ export class AdminController extends Controller {
   async authenticate() { const user = await this.store().authenticate(this.body.email, this.body.password); if (!user) return this.redirect("/nodecms/login?error=1"); this.context.session.user = user; return this.redirect("/nodecms"); }
   async logout() { delete this.context.session.user; return this.redirect("/nodecms/login"); }
   async dashboard() { if (!this.guard()) return; const { data, counts } = await this.store().dashboard(); return this.render("admin/dashboard", { user: this.user, counts, posts: data.posts.slice().reverse().slice(0, 6) }); }
-  async posts() { if (!this.guard()) return; const { data } = await this.store().dashboard(); const type = this.query.type === "page" ? "page" : "post"; return this.render("admin/posts", { user: this.user, type, heading: type === "page" ? "Pages" : "Posts", posts: data.posts.filter((p) => p.type === type).reverse() }); }
-  async editor() { if (!this.guard()) return; const { data } = await this.store().dashboard(); const post = data.posts.find((p) => p.id === Number(this.params.id)) ?? {}; const type = post.type ?? (this.query.type === "page" ? "page" : "post"); return this.render("admin/editor", { user: this.user, post, categories: data.categories, type, heading: post.id ? `Edit ${type}` : `Add ${type}` }); }
+  async posts() {
+    if (!this.guard()) return;
+    const { data } = await this.store().dashboard();
+    const type = this.query.type === "page" ? "page" : "post";
+    const status = ["draft", "published"].includes(this.query.status) ? this.query.status : null;
+    const label = type === "page" ? "Pages" : "Posts";
+    const heading = status ? `${status === "draft" ? "Draft" : "Published"} ${label.toLowerCase()}` : label;
+    const posts = data.posts.filter(post => post.type === type && (!status || post.status === status)).reverse();
+    return this.render("admin/posts", { user: this.user, type, heading, posts });
+  }
+
+  async editor() { if (!this.guard()) return; const { data } = await this.store().dashboard(); const post = data.posts.find((p) => p.id === Number(this.params.id)) ?? {}; const type = post.type ?? (this.query.type === "page" ? "page" : "post"); return this.render("admin/editor", { user: this.user, post, builderData: JSON.stringify(post.blocks ?? []), builderMedia: JSON.stringify(data.media.map(item => ({ url: item.url, title: item.title, alt: item.alt }))), categories: data.categories.map(category => ({ ...category, selected: category.id === post.categoryId })), type, heading: post.id ? `Edit ${type}` : `Add ${type}` }); }
   async savePost() { if (!this.guard()) return; await this.store().savePost(this.body, this.user.id); return this.redirect(`/nodecms/posts?type=${this.body.type}`); }
   async deletePost() { if (!this.guard()) return; await this.store().deletePost(this.params.id); return this.redirect("/nodecms/posts"); }
+  async workspace() {
+    if (!this.guard()) return;
+    const kind = this.params.kind;
+    if (!["tasks", "notes"].includes(kind)) return this.abort(404);
+    const data = await this.store().read();
+    const items = (data[kind] ?? []).slice().sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    const item = items.find(entry => entry.id === Number(this.query.edit)) ?? {};
+    return this.render("admin/workspace", {
+      user: this.user, kind, isTasks: kind === "tasks", item,
+      heading: kind === "tasks" ? "Editorial tasks" : "Team notes",
+      description: kind === "tasks" ? "Plan upcoming work, set priorities, and track your publishing checklist." : "Keep editorial ideas, handover notes, and team knowledge together.",
+      items: items.map(entry => ({ ...entry, author: data.users.find(user => user.id === entry.authorId)?.name ?? "Former team member", statusLabel: { todo: "To do", progress: "In progress", done: "Done" }[entry.status] ?? "Note" })),
+      saved: this.query.saved === "1", deleted: this.query.deleted === "1", error: this.query.error === "1"
+    });
+  }
+  async saveWorkspace() {
+    if (!this.guard()) return;
+    const kind = this.params.kind;
+    if (!["tasks", "notes"].includes(kind)) return this.abort(404);
+    try { await this.store().saveWorkspaceItem(kind, this.body, this.user.id); }
+    catch { return this.redirect(`/nodecms/workspace/${kind}?error=1`); }
+    return this.redirect(`/nodecms/workspace/${kind}?saved=1`);
+  }
+  async deleteWorkspace() {
+    if (!this.guard()) return;
+    const kind = this.params.kind;
+    if (!["tasks", "notes"].includes(kind)) return this.abort(404);
+    await this.store().deleteWorkspaceItem(kind, this.params.id);
+    return this.redirect(`/nodecms/workspace/${kind}?deleted=1`);
+  }
   async categories() { if (!this.guard()) return; const { data } = await this.store().dashboard(); return this.render("admin/categories", { user: this.user, categories: data.categories }); }
   async addCategory() { if (!this.guard()) return; if (this.body.name) await this.store().addCategory(this.body); return this.redirect("/nodecms/categories"); }
   async media() { if (!this.guard()) return; const { data } = await this.store().dashboard(); return this.render("admin/media", { user: this.user, media: data.media }); }

@@ -1,0 +1,115 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "{{heading}} — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+    link rel="stylesheet" href="/public/cms-workspace.css"
+    script src="/public/cms-admin.js" defer=""
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a.active href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Workspace"
+        a href="/nodecms/workspace/tasks" "Editorial tasks"
+        a href="/nodecms/workspace/notes" "Team notes"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+      form.logout method="post" action="/nodecms/logout"
+        input type="hidden" name="_csrf" value="{{csrfToken}}"
+        button type="submit" "Sign out"
+    a.skip-link href="#workspace" "Skip to content"
+    header.cms-toolbar
+      a.toolbar-site href="/" "N / Visit site ↗"
+      span.toolbar-label "Administration"
+      a.toolbar-new href="/nodecms/posts/new" "+ New content"
+      span.toolbar-user "{{user.name}}"
+    main.admin-main id="workspace"
+      header.admin-top
+        div
+          p.kicker "Team workspace"
+          h1 "{{heading}}"
+          p.muted "{{description}}"
+      if saved
+        p.notice.success "Saved successfully."
+      if deleted
+        p.notice.success "Item deleted."
+      if error
+        p.notice.error "Could not save. Check the title, details, and task fields, then try again."
+      div.two-column.workspace-columns
+        form.panel.stack method="post" action="/nodecms/workspace/{{kind}}"
+          input type="hidden" name="_csrf" value="{{csrfToken}}"
+          input type="hidden" name="id" value="{{item.id}}"
+          if item.id
+            h2 "Edit item"
+          else
+            h2 "Create item"
+          label "Title"
+            input name="title" value="{{item.title}}" required="" maxlength="160"
+          label "Details"
+            textarea name="content" rows="6" maxlength="10000" "{{item.content}}"
+          if isTasks
+            label "Status"
+              select name="status"
+                option value="todo" "To do"
+                if item.status == "progress"
+                  option value="progress" selected="" "In progress"
+                else
+                  option value="progress" "In progress"
+                if item.status == "done"
+                  option value="done" selected="" "Done"
+                else
+                  option value="done" "Done"
+            label "Priority"
+              select name="priority"
+                option value="normal" "Normal"
+                if item.priority == "high"
+                  option value="high" selected="" "High"
+                else
+                  option value="high" "High"
+                if item.priority == "low"
+                  option value="low" selected="" "Low"
+                else
+                  option value="low" "Low"
+            label "Due date"
+              input type="date" name="dueDate" value="{{item.dueDate}}"
+          button.primary type="submit" "Save item"
+          if item.id
+            a href="/nodecms/workspace/{{kind}}" "Cancel editing"
+        section.panel
+          div.panel-head
+            h2 "Shared with your team"
+          if items
+            div.workspace-items
+              for entry in items
+                article.workspace-item
+                  div.panel-head
+                    h2 "{{entry.title}}"
+                    span.status "{{entry.statusLabel}}"
+                  p.workspace-details "{{entry.content}}"
+                  if isTasks
+                    p.muted "Priority: {{entry.priority}}"
+                    if entry.dueDate
+                      p.muted "Due: {{entry.dueDate}}"
+                  p.muted "Created by {{entry.author}}"
+                  div.actions
+                    a href="/nodecms/workspace/{{kind}}?edit={{entry.id}}" "Edit"
+                    form method="post" action="/nodecms/workspace/{{kind}}/{{entry.id}}/delete" data-confirm="Delete this item? This cannot be undone."
+                      input type="hidden" name="_csrf" value="{{csrfToken}}"
+                      button.danger type="submit" "Delete"
+          else
+            p.muted "Nothing here yet. Create your first item using the form."

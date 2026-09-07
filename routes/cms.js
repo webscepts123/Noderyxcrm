@@ -23,6 +23,9 @@ export function registerCmsRoutes(app) {
   app.post(`${CMS_PATH}/login`, AdminController.handle("authenticate"));
   app.post(`${CMS_PATH}/logout`, AdminController.handle("logout"));
 
+  app.get(`${CMS_PATH}/workspace/:kind`, AdminController.handle("workspace"));
+  app.post(`${CMS_PATH}/workspace/:kind`, AdminController.handle("saveWorkspace"));
+  app.post(`${CMS_PATH}/workspace/:kind/:id/delete`, AdminController.handle("deleteWorkspace"));
   app.get(CMS_PATH, AdminController.handle("dashboard"));
   app.get(`${CMS_PATH}/posts`, AdminController.handle("posts"));
   app.get(`${CMS_PATH}/posts/new`, AdminController.handle("editor"));

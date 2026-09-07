@@ -1,3 +1,4 @@
+import { sanitizeBlocks, decorateBlocks } from "../../public/builder-model.js";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
@@ -12,14 +13,6 @@ function slugify(value) {
 function hashPassword(password) {
   const salt = randomBytes(16).toString("hex");
   return `${salt}:${scryptSync(password, salt, 64).toString("hex")}`;
-}
-
-function sanitizeBlocks(value) {
-  let blocks = value;
-  if (typeof blocks === "string") { try { blocks = JSON.parse(blocks); } catch { blocks = []; } }
-  if (!Array.isArray(blocks)) return [];
-  const allowed = new Set(["hero", "heading", "text", "image", "button", "columns", "quote", "divider", "spacer"]);
-  return blocks.slice(0, 100).filter((block) => allowed.has(block?.type)).map((block, index) => ({ id: String(block.id || `${Date.now()}-${index}`), type: block.type, text: String(block.text ?? "").slice(0, 20000), url: String(block.url ?? "").slice(0, 2048), alt: String(block.alt ?? "").slice(0, 500) }));
 }
 
 export class CmsStore {
@@ -75,10 +68,39 @@ export class CmsStore {
   }
 
   async mutate(callback) { const data = await this.read(); const result = await callback(data); await this.save(data); return result; }
+  async saveWorkspaceItem(kind, input, authorId) {
+    if (!["tasks", "notes"].includes(kind)) throw new Error("Unknown workspace collection");
+    const title = String(input.title ?? "").trim();
+    const content = String(input.content ?? "").trim();
+    if (!title || title.length > 160 || content.length > 10000) throw new Error("Enter a title up to 160 characters and details up to 10,000 characters.");
+    const dueDate = String(input.dueDate ?? "");
+    if (kind === "tasks" && dueDate && (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate) || !Number.isFinite(Date.parse(dueDate)) || new Date(dueDate).toISOString().slice(0, 10) !== dueDate)) throw new Error("Enter a valid due date.");
+    if (kind === "tasks" && (!["todo", "progress", "done"].includes(input.status) || !["low", "normal", "high"].includes(input.priority))) throw new Error("Choose a valid task status and priority.");
+    return this.mutate(data => {
+      data[kind] ??= [];
+      const existing = input.id ? data[kind].find(item => item.id === Number(input.id)) : null;
+      if (input.id && !existing) throw new Error("This item no longer exists.");
+      const item = {
+        id: existing?.id ?? Math.max(0, ...data[kind].map(item => item.id)) + 1,
+        title, content, authorId: existing?.authorId ?? authorId,
+        createdAt: existing?.createdAt ?? now(), updatedAt: now(),
+        ...(kind === "tasks" ? { status: input.status, priority: input.priority, dueDate } : {})
+      };
+      if (existing) data[kind][data[kind].indexOf(existing)] = item;
+      else data[kind].push(item);
+      return item;
+    });
+  }
+
+  async deleteWorkspaceItem(kind, id) {
+    if (!["tasks", "notes"].includes(kind)) throw new Error("Unknown workspace collection");
+    return this.mutate(data => { data[kind] = (data[kind] ?? []).filter(item => item.id !== Number(id)); });
+  }
+
   async publicPosts(type = "post") { const data = await this.read(); return data.posts.filter((post) => post.type === type && post.status === "published").sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map((post) => this.decorate(post, data)); }
   async findPublished(slug, type) { const data = await this.read(); const post = data.posts.find((item) => item.slug === slug && item.status === "published" && (!type || item.type === type)); return post ? this.decorate(post, data) : null; }
   async dashboard() { const data = await this.read(); return { data, counts: { posts: data.posts.filter((p) => p.type === "post").length, pages: data.posts.filter((p) => p.type === "page").length, drafts: data.posts.filter((p) => p.status === "draft").length, media: data.media.length, comments: data.comments.length, users: data.users.length } }; }
-  decorate(post, data) { const category = data.categories.find((c) => c.id === post.categoryId); return { ...post, category: category?.name ?? "Uncategorized", categorySlug: category?.slug ?? "uncategorized", author: data.users.find((u) => u.id === post.authorId)?.name ?? "Editor", date: new Date(post.publishedAt ?? post.createdAt).toLocaleDateString("en", { year: "numeric", month: "short", day: "numeric" }) }; }
+  decorate(post, data) { const category = data.categories.find((c) => c.id === post.categoryId); return { ...post, blocks: post.blocks?.length ? decorateBlocks(post.blocks) : null, category: category?.name ?? "Uncategorized", categorySlug: category?.slug ?? "uncategorized", author: data.users.find((u) => u.id === post.authorId)?.name ?? "Editor", date: new Date(post.publishedAt ?? post.createdAt).toLocaleDateString("en", { year: "numeric", month: "short", day: "numeric" }) }; }
 
   async authenticate(email, password) {
     const data = await this.read(); const user = data.users.find((item) => item.email.toLowerCase() === String(email).toLowerCase());
@@ -112,9 +134,9 @@ export class CmsStore {
   async savePost(input, authorId) {
     return this.mutate((data) => {
       const id = Number(input.id); const existing = data.posts.find((p) => p.id === id); const title = String(input.title ?? "").trim();
-      const base = { type: input.type === "page" ? "page" : "post", title, slug: slugify(input.slug || title), excerpt: String(input.excerpt ?? "").trim(), content: String(input.content ?? "").trim(), blocks: input.type === "page" ? sanitizeBlocks(input.blocks) : (existing?.blocks ?? []), status: input.status === "published" ? "published" : "draft", categoryId: Number(input.categoryId) || 1, featuredImage: String(input.featuredImage ?? "").trim(), seoTitle: String(input.seoTitle ?? "").trim(), seoDescription: String(input.seoDescription ?? "").trim(), updatedAt: now() };
+      const base = { layout: ["standard", "wide", "canvas"].includes(input.layout) ? input.layout : (existing?.layout ?? "standard"), type: input.type === "page" ? "page" : "post", title, slug: slugify(input.slug || title), excerpt: String(input.excerpt ?? "").trim(), content: String(input.content ?? "").trim(), blocks: input.blocks === undefined ? (existing?.blocks ?? []) : sanitizeBlocks(input.blocks), status: input.status === "published" ? "published" : "draft", categoryId: Number(input.categoryId) || 1, featuredImage: String(input.featuredImage ?? "").trim(), seoTitle: String(input.seoTitle ?? "").trim(), seoDescription: String(input.seoDescription ?? "").trim(), updatedAt: now() };
       if (existing) {
-        data.revisions.push({ id: Math.max(0, ...data.revisions.map((r) => r.id)) + 1, postId: existing.id, title: existing.title, content: existing.content, blocks: existing.blocks ?? [], excerpt: existing.excerpt, status: existing.status, authorId, createdAt: now() });
+        data.revisions.push({ id: Math.max(0, ...data.revisions.map((r) => r.id)) + 1, postId: existing.id, title: existing.title, layout: existing.layout ?? "standard", content: existing.content, blocks: existing.blocks ?? [], excerpt: existing.excerpt, status: existing.status, authorId, createdAt: now() });
         Object.assign(existing, base); if (base.status === "published" && !existing.publishedAt) existing.publishedAt = now(); return existing;
       }
       const post = { id: Math.max(0, ...data.posts.map((p) => p.id)) + 1, ...base, authorId, createdAt: now(), publishedAt: base.status === "published" ? now() : null }; data.posts.push(post); return post;
@@ -175,7 +197,7 @@ export class CmsStore {
   }
   async deleteComment(id) { const rid = Number(id); return this.mutate((data) => { data.comments = data.comments.filter((c) => c.id !== rid && c.parentId !== rid); }); }
 
-  async restoreRevision(id) { return this.mutate((data) => { const revision = data.revisions.find((r) => r.id === Number(id)); const post = revision && data.posts.find((p) => p.id === revision.postId); if (post) Object.assign(post, { title: revision.title, content: revision.content, blocks: revision.blocks ?? [], excerpt: revision.excerpt, status: revision.status, updatedAt: now() }); }); }
+  async restoreRevision(id) { return this.mutate((data) => { const revision = data.revisions.find((r) => r.id === Number(id)); const post = revision && data.posts.find((p) => p.id === revision.postId); if (post) Object.assign(post, { title: revision.title, layout: revision.layout ?? "standard", content: revision.content, blocks: revision.blocks ?? [], excerpt: revision.excerpt, status: revision.status, updatedAt: now() }); }); }
 
   async backups() { return this.vault.list(); }
 

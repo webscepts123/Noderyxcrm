@@ -2,6 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const CORE_PLUGINS = [
+  { id: "visual-builder", name: "Noderyx Visual Builder", description: "Built-in full-screen visual editor for posts and pages. Widgets, styling, templates, responsive previews, and revision support." },
   { id: "content", name: "Content Publishing", description: "Posts, pages, categories, revisions, and publishing workflows." },
   { id: "media", name: "Media Library", description: "Image uploads, remote media, metadata, and featured images." },
   { id: "comments", name: "Comments", description: "Public discussion, moderation, approval, and spam controls." },

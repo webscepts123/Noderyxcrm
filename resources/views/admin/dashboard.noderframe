@@ -4,6 +4,8 @@ html lang="en"
     meta name="viewport" content="width=device-width, initial-scale=1"
     title "Dashboard — Noderyx CMS"
     link rel="stylesheet" href="/public/cms.css"
+    link rel="stylesheet" href="/public/cms-workspace.css"
+    script src="/public/cms-admin.js" defer=""
   body.admin-body
     div.sidebar
       a.admin-brand href="/nodecms" "Noderyx CMS"
@@ -15,6 +17,9 @@ html lang="en"
         a href="/nodecms/media" "Media"
         a href="/nodecms/categories" "Categories"
         a href="/nodecms/comments" "Comments"
+        p.nav-section "Workspace"
+        a href="/nodecms/workspace/tasks" "Editorial tasks"
+        a href="/nodecms/workspace/notes" "Team notes"
         p.nav-section "Appearance"
         a href="/nodecms/menus" "Menus"
         a href="/nodecms/themes" "Themes"
@@ -27,12 +32,27 @@ html lang="en"
       form.logout method="post" action="/nodecms/logout"
         input type="hidden" name="_csrf" value="{{csrfToken}}"
         button type="submit" "Sign out"
-    main.admin-main
+    a.skip-link href="#workspace" "Skip to content"
+    header.cms-toolbar
+      a.toolbar-site href="/" "N / Visit site ↗"
+      span.toolbar-label "Administration"
+      a.toolbar-new href="/nodecms/posts/new" "+ New content"
+      span.toolbar-user "{{user.name}}"
+    main.admin-main id="workspace"
       header.admin-top
         div
           p.kicker "Overview"
-          h1 "Welcome, {{user.name}}"
+          h1 "Dashboard"
         a.button href="/nodecms/posts/new" "+ New post"
+      section.welcome-panel
+        div
+          p.kicker "YOUR PUBLISHING WORKSPACE"
+          h2 "Make something worth sharing."
+          p "Welcome back, {{user.name}}. Your content, your community, your next idea — all in one place."
+          div.welcome-actions
+            a.button href="/nodecms/posts/new" "Create a post"
+            a.welcome-link href="/nodecms/posts/new?type=page" "Build a page →"
+        div.welcome-mark aria-hidden="true" "N"
       section.stats
         article.stat
           span "Posts"
@@ -52,7 +72,7 @@ html lang="en"
         article.stat
           span "Users"
           strong "{{counts.users}}"
-      section.panel
+      section.panel.dashboard-recent
         div.panel-head
           h2 "Recent content"
           a href="/nodecms/posts" "View all"
@@ -73,3 +93,20 @@ html lang="en"
                   div.cell
                     span.status "{{post.status}}"
                   div.cell "{{post.updatedAt}}"
+      section.dashboard-tools
+        article.panel
+          div.panel-head
+            h2 "Make it yours"
+            span.muted "Appearance"
+          p.muted "Shape your site’s identity and help readers find their way."
+          a.tool-link href="/nodecms/themes" "Themes & customization →"
+          a.tool-link href="/nodecms/menus" "Navigation menus →"
+          a.tool-link href="/nodecms/settings" "Site identity & SEO →"
+        article.panel
+          div.panel-head
+            h2 "Behind the scenes"
+            span.muted "Management"
+          p.muted "Keep your publishing workflow organized and connected."
+          a.tool-link href="/nodecms/comments" "Moderate comments →"
+          a.tool-link href="/nodecms/backups" "Manage backups →"
+          a.tool-link href="/nodecms/integrations" "Connect integrations →"

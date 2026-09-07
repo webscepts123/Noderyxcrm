@@ -65,3 +65,16 @@ Run `npm run seed` after changing them to create or update the administrator.
 
 The public site loads the built-in `default` theme through `ThemeManager`. Theme
 selection is stored in CMS settings and safely falls back to the default theme.
+
+## Built-in visual builder
+
+Noderyx Visual Builder is an active core CMS plugin; no installation or license key is needed. Open a post or page and choose **Open full builder**, or use **Build** in the content list. The Plugins screen also links directly to a new builder page.
+
+- Add and reorder 12 widgets: hero, heading, text, image, button, two-column text, quote, divider, spacer, card, call to action, and list.
+- Select a widget on the canvas or in Navigator to edit its content, colors, spacing, font size, alignment, corners, and responsive visibility. Image widgets can use the CMS media library.
+- Use desktop, tablet, and mobile previews. Hidden widgets remain selectable in edit mode; **Preview** applies visibility rules.
+- Insert starter layouts, undo/redo changes, duplicate widgets, and import/export layout JSON. **Save layout as template** stores one reusable layout in the current browser; JSON export lets you transfer it elsewhere.
+- Choose Standard, Full width, or Blank canvas in the editor's publishing panel. Blank canvas removes the site's header/footer and article heading.
+- **Back to editor** keeps changes in the form. **Save content** persists the current post/page with its selected draft/published status. Existing revisions include widget styles and the page layout.
+
+Text from an existing article is imported as a text widget when opening an empty builder. Visual widgets take precedence over fallback text on the published site. The canvas previews content; the site's active theme can affect typography and surrounding layout. This is a native Noderyx builder, not an Elementor installation; it does not yet provide nested widget containers, popups, dynamic database fields, or a site-wide header/footer designer.

@@ -160,3 +160,31 @@ test("backup destinations and integration settings are configuration-driven", as
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test("workspace tasks and notes persist edits and validate submitted values", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "nodecms-workspace-"));
+  try {
+    const file = join(directory, "cms.json");
+    const store = await new CmsStore(file).initialize();
+    const task = await store.saveWorkspaceItem("tasks", { title: "Review launch", content: "Check copy", status: "todo", priority: "high", dueDate: "2026-10-20" }, 1);
+    const note = await store.saveWorkspaceItem("notes", { title: "Style guide", content: "Use sentence case." }, 1);
+    const reopened = await new CmsStore(file).initialize();
+    assert.equal((await reopened.read()).tasks[0].dueDate, "2026-10-20");
+    await reopened.saveWorkspaceItem("tasks", { ...task, status: "done" }, 2);
+    const data = await reopened.read();
+    assert.equal(data.tasks.length, 1);
+    assert.equal(data.tasks[0].status, "done");
+    assert.equal(data.tasks[0].authorId, 1);
+    assert.equal(data.notes[0].content, "Use sentence case.");
+    await assert.rejects(reopened.saveWorkspaceItem("users", { title: "Invalid" }, 1), /Unknown/);
+    await assert.rejects(reopened.saveWorkspaceItem("notes", { title: " " }, 1), /title/);
+    await assert.rejects(reopened.saveWorkspaceItem("tasks", { ...task, status: "invalid" }, 1), /status/);
+    await assert.rejects(reopened.saveWorkspaceItem("tasks", { ...task, dueDate: "2026-02-30" }, 1), /date/);
+    await assert.rejects(reopened.saveWorkspaceItem("notes", { id: 999, title: "Missing" }, 1), /no longer/);
+    await reopened.deleteWorkspaceItem("tasks", task.id);
+    assert.equal((await reopened.read()).tasks.length, 0);
+    assert.equal((await reopened.read()).notes.length, 1);
+    await reopened.deleteWorkspaceItem("notes", note.id);
+    assert.equal((await reopened.read()).notes.length, 0);
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

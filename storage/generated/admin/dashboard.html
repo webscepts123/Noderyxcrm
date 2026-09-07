@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Dashboard — Noderyx CMS</title>
     <link rel="stylesheet" href="/public/cms.css">
+    <link rel="stylesheet" href="/public/cms-workspace.css">
+    <script src="/public/cms-admin.js" defer=""></script>
   </head>
   <body class="admin-body">
     <div class="sidebar">
@@ -17,6 +19,9 @@
         <a href="/nodecms/media">Media</a>
         <a href="/nodecms/categories">Categories</a>
         <a href="/nodecms/comments">Comments</a>
+        <p class="nav-section">Workspace</p>
+        <a href="/nodecms/workspace/tasks">Editorial tasks</a>
+        <a href="/nodecms/workspace/notes">Team notes</a>
         <p class="nav-section">Appearance</p>
         <a href="/nodecms/menus">Menus</a>
         <a href="/nodecms/themes">Themes</a>
@@ -32,14 +37,33 @@
         <button type="submit">Sign out</button>
       </form>
     </div>
-    <main class="admin-main">
+    <a href="#workspace" class="skip-link">Skip to content</a>
+    <header class="cms-toolbar">
+      <a href="/" class="toolbar-site">N / Visit site ↗</a>
+      <span class="toolbar-label">Administration</span>
+      <a href="/nodecms/posts/new" class="toolbar-new">+ New content</a>
+      <span class="toolbar-user"></span>
+    </header>
+    <main id="workspace" class="admin-main">
       <header class="admin-top">
         <div>
           <p class="kicker">Overview</p>
-          <h1>Welcome, </h1>
+          <h1>Dashboard</h1>
         </div>
         <a href="/nodecms/posts/new" class="button">+ New post</a>
       </header>
+      <section class="welcome-panel">
+        <div>
+          <p class="kicker">YOUR PUBLISHING WORKSPACE</p>
+          <h2>Make something worth sharing.</h2>
+          <p>Welcome back, . Your content, your community, your next idea — all in one place.</p>
+          <div class="welcome-actions">
+            <a href="/nodecms/posts/new" class="button">Create a post</a>
+            <a href="/nodecms/posts/new?type=page" class="welcome-link">Build a page →</a>
+          </div>
+        </div>
+        <div aria-hidden="true" class="welcome-mark">N</div>
+      </section>
       <section class="stats">
         <article class="stat">
           <span>Posts</span>
@@ -66,7 +90,7 @@
           <strong></strong>
         </article>
       </section>
-      <section class="panel">
+      <section class="panel dashboard-recent">
         <div class="panel-head">
           <h2>Recent content</h2>
           <a href="/nodecms/posts">View all</a>
@@ -85,6 +109,28 @@
             </div>
           </div>
         </div>
+      </section>
+      <section class="dashboard-tools">
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Make it yours</h2>
+            <span class="muted">Appearance</span>
+          </div>
+          <p class="muted">Shape your site’s identity and help readers find their way.</p>
+          <a href="/nodecms/themes" class="tool-link">Themes & customization →</a>
+          <a href="/nodecms/menus" class="tool-link">Navigation menus →</a>
+          <a href="/nodecms/settings" class="tool-link">Site identity & SEO →</a>
+        </article>
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Behind the scenes</h2>
+            <span class="muted">Management</span>
+          </div>
+          <p class="muted">Keep your publishing workflow organized and connected.</p>
+          <a href="/nodecms/comments" class="tool-link">Moderate comments →</a>
+          <a href="/nodecms/backups" class="tool-link">Manage backups →</a>
+          <a href="/nodecms/integrations" class="tool-link">Connect integrations →</a>
+        </article>
       </section>
     </main>
   </body>

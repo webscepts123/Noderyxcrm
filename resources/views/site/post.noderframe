@@ -7,7 +7,10 @@ html lang="en"
     meta property="og:image" content="{{post.featuredImage}}"
     title "{{post.seoTitle}}"
     link rel="stylesheet" href="{{theme.stylesheet}}"
-  body.site-body
+    link rel="stylesheet" href="/public/builder-content.css"
+    if post.blocks
+      link rel="stylesheet" href="/builder-style/{{post.type}}/{{post.slug}}"
+  body.site-body data-layout="{{post.layout}}"
     header.site-header
       div.wrap.header-row
         a.brand href="/" "{{settings.siteName}}"
@@ -27,31 +30,44 @@ html lang="en"
         div.article-content
           if post.blocks
             for block in post.blocks
-              if block.type == "hero"
-                section.content-hero
+              section.nvb-content data-block-index="{{block.index}}" data-visibility="{{block.visibility}}" data-widget="{{block.type}}"
+                if block.type == "hero"
+                  if block.url
+                    img.nvb-image src="{{block.url}}" alt="{{block.alt}}"
                   h2 "{{block.text}}"
                   p "{{block.alt}}"
-              if block.type == "heading"
-                h2 "{{block.text}}"
-              if block.type == "text"
-                p "{{block.text}}"
-              if block.type == "image"
-                img.content-image src="{{block.url}}" alt="{{block.alt}}"
-              if block.type == "button"
-                p
-                  a.button href="{{block.url}}" "{{block.text}}"
-              if block.type == "columns"
-                div.content-columns
+                if block.type == "heading"
+                  h2 "{{block.text}}"
+                if block.type == "text"
                   p "{{block.text}}"
-                  p "{{block.alt}}"
-              if block.type == "quote"
-                div.content-quote
-                  p "{{block.text}}"
+                if block.type == "image"
+                  if block.url
+                    img.nvb-image src="{{block.url}}" alt="{{block.alt}}"
+                if block.type == "button"
+                  a.nvb-button href="{{block.url}}" "{{block.text}}"
+                if block.type == "columns"
+                  div.nvb-columns
+                    p "{{block.text}}"
+                    p "{{block.alt}}"
+                if block.type == "quote"
+                  p.nvb-quote "{{block.text}}"
                   span "{{block.alt}}"
-              if block.type == "divider"
-                div.content-divider
-              if block.type == "spacer"
-                div.content-spacer
+                if block.type == "divider"
+                  div.nvb-divider
+                if block.type == "spacer"
+                  div.nvb-spacer
+                if block.type == "card"
+                  if block.url
+                    img.nvb-image src="{{block.url}}" alt="{{block.alt}}"
+                  h3 "{{block.text}}"
+                  p "{{block.alt}}"
+                if block.type == "cta"
+                  h2 "{{block.text}}"
+                  a.nvb-button href="{{block.url}}" "{{block.alt}}"
+                if block.type == "list"
+                  ul
+                    for line in block.lines
+                      li "{{line}}"
           else
             p "{{post.content}}"
         if allowComments

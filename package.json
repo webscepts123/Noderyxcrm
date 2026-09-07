@@ -1,7 +1,7 @@
 {
   "name": "create-noderyxcrm",
-  "version": "1.0.2",
-  "description": "Scaffold a new Noderyx CRM/CMS project built on the Noderyx Framework.",
+  "version": "1.1.0",
+  "description": "Noderyx CRM/CMS with a visual builder, publishing tools, and a WordPress-style admin workspace.",
   "type": "module",
   "license": "MIT",
   "bin": {
@@ -22,7 +22,8 @@
     "noderyx.config.js",
     ".env.example",
     "Dockerfile",
-    "Procfile"
+    "Procfile",
+    "CHANGELOG.md"
   ],
   "keywords": [
     "noderyx",
@@ -57,10 +58,19 @@
     "migrate": "noderyx-framework migrate",
     "seed": "node database/seeders/AdminSeeder.js",
     "cms:new": "node bin/nodecms.js create",
-    "test": "node --test"
+    "test": "node --test",
+    "prepublishOnly": "npm test && npm run build"
   },
   "dependencies": {
     "adm-zip": "^0.6.0",
     "noderyx-framework": ">=0.7.1 <1.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webscepts123/Noderyxcrm.git"
+  },
+  "homepage": "https://github.com/webscepts123/Noderyxcrm#readme",
+  "bugs": {
+    "url": "https://github.com/webscepts123/Noderyxcrm/issues"
   }
 }

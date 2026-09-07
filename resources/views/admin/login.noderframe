@@ -4,6 +4,7 @@ html lang="en"
     meta name="viewport" content="width=device-width, initial-scale=1"
     title "Sign in — Noderyx CMS"
     link rel="stylesheet" href="/public/cms.css"
+    link rel="stylesheet" href="/public/cms-workspace.css"
   body.login-body
     main.login-card
       a.login-logo href="/" "Noderyx CMS"

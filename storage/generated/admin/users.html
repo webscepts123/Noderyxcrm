@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Users — Noderyx CMS</title>
     <link rel="stylesheet" href="/public/cms.css">
+    <link rel="stylesheet" href="/public/cms-workspace.css">
+    <script src="/public/cms-admin.js" defer=""></script>
   </head>
   <body class="admin-body">
     <div class="sidebar">
@@ -17,6 +19,9 @@
         <a href="/nodecms/media">Media</a>
         <a href="/nodecms/categories">Categories</a>
         <a href="/nodecms/comments">Comments</a>
+        <p class="nav-section">Workspace</p>
+        <a href="/nodecms/workspace/tasks">Editorial tasks</a>
+        <a href="/nodecms/workspace/notes">Team notes</a>
         <p class="nav-section">Appearance</p>
         <a href="/nodecms/menus">Menus</a>
         <a href="/nodecms/themes">Themes</a>
@@ -27,8 +32,19 @@
         <a href="/nodecms/integrations">Integrations</a>
         <a href="/nodecms/settings">Settings & SEO</a>
       </nav>
+      <form method="post" action="/nodecms/logout" class="logout">
+        <input type="hidden" name="_csrf" value="">
+        <button type="submit">Sign out</button>
+      </form>
     </div>
-    <main class="admin-main">
+    <a href="#workspace" class="skip-link">Skip to content</a>
+    <header class="cms-toolbar">
+      <a href="/" class="toolbar-site">N / Visit site ↗</a>
+      <span class="toolbar-label">Administration</span>
+      <a href="/nodecms/posts/new" class="toolbar-new">+ New content</a>
+      <span class="toolbar-user"></span>
+    </header>
+    <main id="workspace" class="admin-main">
       <header class="admin-top">
         <div>
           <p class="kicker">Access</p>
@@ -36,7 +52,7 @@
         </div>
       </header>
       <div class="two-column">
-        <form method="post" action="/nodecms/users" class="panel stack">
+        <form id="add-user" method="post" action="/nodecms/users" class="panel stack">
           <input type="hidden" name="_csrf" value="">
           <h2>Add user</h2>
           <label>Name

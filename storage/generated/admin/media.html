@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Media — Noderyx CMS</title>
     <link rel="stylesheet" href="/public/cms.css">
+    <link rel="stylesheet" href="/public/cms-workspace.css">
     <script src="/public/cms-admin.js" defer=""></script>
   </head>
   <body class="admin-body">
@@ -18,6 +19,9 @@
         <a href="/nodecms/media" class="active">Media</a>
         <a href="/nodecms/categories">Categories</a>
         <a href="/nodecms/comments">Comments</a>
+        <p class="nav-section">Workspace</p>
+        <a href="/nodecms/workspace/tasks">Editorial tasks</a>
+        <a href="/nodecms/workspace/notes">Team notes</a>
         <p class="nav-section">Appearance</p>
         <a href="/nodecms/menus">Menus</a>
         <a href="/nodecms/themes">Themes</a>
@@ -28,28 +32,54 @@
         <a href="/nodecms/integrations">Integrations</a>
         <a href="/nodecms/settings">Settings & SEO</a>
       </nav>
+      <form method="post" action="/nodecms/logout" class="logout">
+        <input type="hidden" name="_csrf" value="">
+        <button type="submit">Sign out</button>
+      </form>
     </div>
-    <main class="admin-main">
+    <a href="#workspace" class="skip-link">Skip to content</a>
+    <header class="cms-toolbar">
+      <a href="/" class="toolbar-site">N / Visit site ↗</a>
+      <span class="toolbar-label">Administration</span>
+      <a href="/nodecms/posts/new" class="toolbar-new">+ New content</a>
+      <span class="toolbar-user"></span>
+    </header>
+    <main id="workspace" class="admin-main">
       <header class="admin-top">
         <div>
           <p class="kicker">Library</p>
           <h1>Media</h1>
         </div>
       </header>
-      <form method="post" action="/nodecms/media" class="panel inline-form">
-        <input type="hidden" name="_csrf" value="">
-        <input name="title" placeholder="Image title" required="">
-        <input type="url" name="url" placeholder="https://example.com/image.jpg" required="">
-        <input name="alt" placeholder="Alt text">
-        <button type="submit" class="primary">Add media</button>
-      </form>
-      <form id="media-upload-form" action="/nodecms/media" class="panel inline-form">
-        <input type="hidden" name="_csrf" value="">
-        <input type="file" name="file" accept="image/png,image/jpeg,image/gif,image/webp" required="">
-        <input name="title" placeholder="Image title">
-        <input name="alt" placeholder="Alt text">
-        <button type="submit" class="primary">Upload image</button>
-      </form>
+      <div class="media-add">
+        <div id="media-dropzone" class="panel dropzone">
+          <input type="hidden" name="_csrf" value="">
+          <input type="file" id="media-files" accept="image/png,image/jpeg,image/gif,image/webp" multiple="" class="dz-hidden">
+          <div class="dropzone-body">
+            <span class="dropzone-icon"></span>
+            <strong>Drag & drop images here</strong>
+            <p class="muted">Add several at once, or paste an image from your clipboard.</p>
+            <button type="button" id="media-browse" class="primary">Choose images</button>
+          </div>
+        </div>
+        <form method="post" action="/nodecms/media" id="media-url-form" class="panel inline-form">
+          <input type="hidden" name="_csrf" value="">
+          <input name="title" placeholder="Image title" required="">
+          <input type="url" name="url" placeholder="https://example.com/image.jpg" required="">
+          <input name="alt" placeholder="Alt text">
+          <button type="submit" class="primary">Add from URL</button>
+        </form>
+      </div>
+      <section id="upload-queue" hidden="" class="upload-queue">
+        <div class="upload-queue-head">
+          <strong id="upload-queue-title">Ready to upload</strong>
+          <div class="upload-queue-actions">
+            <button type="button" id="upload-clear" class="ghost">Clear</button>
+            <button type="button" id="upload-start" class="primary">Upload all</button>
+          </div>
+        </div>
+        <div id="upload-queue-list" class="upload-queue-list"></div>
+      </section>
       <section class="media-grid">
       </section>
     </main>

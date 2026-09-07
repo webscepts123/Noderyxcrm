@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title> — Noderyx CMS</title>
     <link rel="stylesheet" href="/public/cms.css">
+    <link rel="stylesheet" href="/public/cms-workspace.css">
     <script src="/public/cms-admin.js" defer=""></script>
+    <link rel="stylesheet" href="/public/visual-builder.css">
+    <link rel="stylesheet" href="/public/builder-content.css">
+    <script type="module" src="/public/visual-builder.js"></script>
   </head>
   <body class="admin-body">
     <div class="sidebar">
@@ -18,6 +22,9 @@
         <a href="/nodecms/media">Media</a>
         <a href="/nodecms/categories">Categories</a>
         <a href="/nodecms/comments">Comments</a>
+        <p class="nav-section">Workspace</p>
+        <a href="/nodecms/workspace/tasks">Editorial tasks</a>
+        <a href="/nodecms/workspace/notes">Team notes</a>
         <p class="nav-section">Appearance</p>
         <a href="/nodecms/menus">Menus</a>
         <a href="/nodecms/themes">Themes</a>
@@ -28,8 +35,19 @@
         <a href="/nodecms/integrations">Integrations</a>
         <a href="/nodecms/settings">Settings & SEO</a>
       </nav>
+      <form method="post" action="/nodecms/logout" class="logout">
+        <input type="hidden" name="_csrf" value="">
+        <button type="submit">Sign out</button>
+      </form>
     </div>
-    <main class="admin-main">
+    <a href="#workspace" class="skip-link">Skip to content</a>
+    <header class="cms-toolbar">
+      <a href="/" class="toolbar-site">N / Visit site ↗</a>
+      <span class="toolbar-label">Administration</span>
+      <a href="/nodecms/posts/new" class="toolbar-new">+ New content</a>
+      <span class="toolbar-user"></span>
+    </header>
+    <main id="workspace" class="admin-main">
       <header class="admin-top">
         <div>
           <p class="kicker">Editor</p>
@@ -50,9 +68,18 @@
           <label>Excerpt
             <textarea name="excerpt" rows="3"></textarea>
           </label>
-          <label>Content
-            <textarea name="content" rows="16" required="" class="editor"></textarea>
+          <div class="builder-launch">
+            <h2>Noderyx Visual Builder</h2>
+            <p class="muted">Build this post or page visually with widgets, templates, and responsive style controls. Included in core CMS.</p>
+            <button type="button" id="open-visual-builder" class="primary">Open full builder</button>
+            <p id="builder-summary" class="muted">Your content stays in this editor until you save.</p>
+          </div>
+          <textarea name="blocks" id="visual-builder-data" hidden=""></textarea>
+          <textarea id="visual-builder-media" hidden=""></textarea>
+          <label>Text content / fallback
+            <textarea name="content" id="visual-builder-content" rows="10" class="editor"></textarea>
           </label>
+          <p class="muted">When visual widgets exist, they are displayed on your site instead of this text. Opening a blank builder imports this text as a widget.</p>
           <h2>Search preview</h2>
           <label>SEO title
             <input name="seoTitle" value="" maxlength="70">
@@ -63,6 +90,13 @@
         </section>
         <div class="panel stack publish-box">
           <h2>Publish</h2>
+          <label>Page layout
+            <select name="layout">
+              <option value="standard">Standard article</option>
+              <option value="wide">Full width content</option>
+              <option value="canvas">Blank canvas (no site header/footer)</option>
+            </select>
+          </label>
           <label>Status
             <select name="status">
               <option value="draft" selected="">Draft</option>

@@ -357,98 +357,6 @@
     refresh();
   }
 
-  const pageBuilder = document.querySelector("#page-builder");
-  if (pageBuilder) {
-    const canvas = pageBuilder.querySelector("#builder-canvas");
-    const empty = pageBuilder.querySelector("#builder-empty");
-    let dragging = null;
-    let newType = null;
-    const refresh = () => { empty.hidden = canvas.querySelectorAll(".builder-block").length > 0; };
-    const field = (className, placeholder, multiline = false) => {
-      const element = document.createElement(multiline ? "textarea" : "input");
-      element.className = className;
-      element.placeholder = placeholder;
-      if (multiline) element.rows = 5;
-      return element;
-    };
-    const bind = (block) => {
-      block.querySelector(".builder-remove").addEventListener("click", () => { block.remove(); refresh(); });
-      block.querySelector(".builder-duplicate").addEventListener("click", () => addBlock(block.dataset.type, { text: block.querySelector(".block-text")?.value ?? "", url: block.querySelector(".block-url")?.value ?? "", alt: block.querySelector(".block-alt")?.value ?? "" }, block));
-      block.addEventListener("dragstart", () => { dragging = block; block.classList.add("dragging"); });
-      block.addEventListener("dragend", () => { dragging = null; block.classList.remove("dragging"); });
-    };
-    const addBlock = (type, values = {}, after = null) => {
-      const block = document.createElement("article");
-      block.className = "builder-block";
-      block.draggable = true;
-      block.dataset.id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-      block.dataset.type = type;
-      const head = document.createElement("div");
-      head.className = "builder-block-head";
-      const handle = document.createElement("span");
-      handle.className = "drag-handle";
-      handle.textContent = "⋮⋮";
-      const title = document.createElement("strong");
-      title.textContent = type;
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.className = "danger builder-remove";
-      remove.textContent = "Remove";
-      const actions = document.createElement("div");
-      const duplicate = document.createElement("button");
-      duplicate.type = "button";
-      duplicate.className = "builder-duplicate";
-      duplicate.textContent = "Duplicate";
-      actions.append(duplicate, remove);
-      head.append(handle, title, actions);
-      block.append(head);
-      const appendField = (className, placeholder, value, multiline = false) => { const element = field(className, placeholder, multiline); element.value = value ?? ""; block.append(element); };
-      if (type === "hero") { appendField("block-text", "Hero headline", values.text); appendField("block-alt", "Hero supporting text", values.alt); appendField("block-url", "Background image URL (optional)", values.url); }
-      if (type === "heading") appendField("block-text", "Section heading", values.text);
-      if (type === "text") appendField("block-text", "Write your content", values.text, true);
-      if (type === "image") { appendField("block-url", "Image URL", values.url); appendField("block-alt", "Alternative text", values.alt); }
-      if (type === "button") { appendField("block-text", "Button label", values.text); appendField("block-url", "Button URL", values.url); }
-      if (type === "columns") { appendField("block-text", "Left column content", values.text, true); appendField("block-alt", "Right column content", values.alt, true); }
-      if (type === "quote") { appendField("block-text", "Quotation", values.text, true); appendField("block-alt", "Author", values.alt); }
-      if (type === "divider") { const divider = document.createElement("div"); divider.className = "builder-divider"; block.append(divider); }
-      if (type === "spacer") { const spacer = document.createElement("div"); spacer.className = "builder-spacer"; spacer.textContent = "Spacing"; block.append(spacer); }
-      if (after?.nextSibling) canvas.insertBefore(block, after.nextSibling); else canvas.append(block);
-      bind(block);
-      refresh();
-    };
-    canvas.querySelectorAll(".builder-block").forEach(bind);
-    canvas.addEventListener("dragover", (event) => {
-      event.preventDefault();
-      if (!dragging) return;
-      const siblings = [...canvas.querySelectorAll(".builder-block:not(.dragging)")];
-      const after = siblings.find((block) => event.clientY <= block.getBoundingClientRect().top + block.offsetHeight / 2);
-      canvas.insertBefore(dragging, after ?? null);
-    });
-    canvas.addEventListener("drop", (event) => { event.preventDefault(); if (newType) { addBlock(newType); newType = null; } });
-    pageBuilder.querySelectorAll(".builder-add").forEach((button) => {
-      button.addEventListener("click", () => addBlock(button.dataset.type));
-      button.addEventListener("dragstart", () => { newType = button.dataset.type; });
-      button.addEventListener("dragend", () => { newType = null; });
-    });
-    pageBuilder.querySelectorAll(".builder-device").forEach((button) => button.addEventListener("click", () => {
-      pageBuilder.querySelectorAll(".builder-device").forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
-      pageBuilder.querySelector(".builder-stage").dataset.width = button.dataset.width;
-    }));
-    pageBuilder.closest("form").addEventListener("submit", () => {
-      const blocks = [...canvas.querySelectorAll(".builder-block")].map((block) => ({
-        id: block.dataset.id,
-        type: block.dataset.type,
-        text: block.querySelector(".block-text")?.value.trim() ?? "",
-        url: block.querySelector(".block-url")?.value.trim() ?? "",
-        alt: block.querySelector(".block-alt")?.value.trim() ?? ""
-      }));
-      document.querySelector("#page-blocks-value").value = JSON.stringify(blocks);
-      document.querySelector("#page-content-value").value = blocks.filter((block) => block.type === "heading" || block.type === "text").map((block) => block.text).join("\n\n");
-    });
-    refresh();
-  }
-
   const integrationsForm = document.querySelector("#integrations-form");
   if (integrationsForm) {
     const groups = [...integrationsForm.querySelectorAll(".integration-group")];
@@ -504,18 +412,23 @@
   };
 
   // 1. Make sure exactly one link reflects the current page.
-  const here = location.pathname + location.search;
   const links = [...nav.querySelectorAll("a")];
-  let active = nav.querySelector("a.active");
-  if (!active) {
-    active = links.find((a) => a.getAttribute("href") === here)
-      || links
-        .filter((a) => a.getAttribute("href") !== "/nodecms" && here.startsWith(a.getAttribute("href")))
-        .sort((a, b) => b.getAttribute("href").length - a.getAttribute("href").length)[0]
-      || (location.pathname === "/nodecms" ? links.find((a) => a.getAttribute("href") === "/nodecms") : null);
-    if (active) active.classList.add("active");
-  }
-  if (active) active.setAttribute("aria-current", "page");
+  let active;
+  const updateActive = () => {
+    const here = location.pathname + location.search + location.hash;
+    active = links.find(a => a.getAttribute("href") === here)
+      || links.filter(a => {
+        const href = a.getAttribute("href");
+        return href !== "/" && href !== "/nodecms" && (here.startsWith(href + "/") || here.startsWith(href + "?") || here.startsWith(href + "#"));
+      }).sort((a, b) => b.getAttribute("href").length - a.getAttribute("href").length)[0];
+    for (const link of links) {
+      link.classList.toggle("active", link === active);
+      if (link === active) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    }
+  };
+  updateActive();
+  window.addEventListener("hashchange", updateActive);
 
   // 2. Turn each "Content / Appearance / System" heading into a collapsible group.
   const sections = [...nav.querySelectorAll(".nav-section")];
@@ -606,3 +519,91 @@
   // 6. Keep the active item in view within a scrolled sidebar.
   if (active) active.scrollIntoView({ block: "nearest" });
 })();
+
+// Workspace preferences and content tools. All content actions keep their existing routes.
+(() => {
+  const main = document.querySelector('.admin-main');
+  if (!main) return;
+  const create = (tag, className, text) => {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text) el.textContent = text;
+    return el;
+  };
+  let preferences = {};
+  try { preferences = JSON.parse(localStorage.getItem('nodecms:workspace')) || {}; } catch { /* Defaults work without storage. */ }
+  const save = () => { try { localStorage.setItem('nodecms:workspace', JSON.stringify(preferences)); } catch { /* Session only. */ } };
+  const options = create('details', 'screen-options');
+  options.append(create('summary', '', 'Screen options'));
+  const fields = create('div', 'screen-fields');
+  const densityLabel = create('label', '', 'Table density');
+  const density = create('select');
+  for (const [value, label] of [['comfortable', 'Comfortable'], ['compact', 'Compact']]) {
+    const option = create('option', '', label); option.value = value; density.append(option);
+  }
+  density.value = preferences.density === 'compact' ? 'compact' : 'comfortable';
+  const applyDensity = () => document.body.classList.toggle('compact', density.value === 'compact');
+  applyDensity();
+  density.addEventListener('change', () => { preferences.density = density.value; save(); applyDensity(); });
+  densityLabel.append(density); fields.append(densityLabel);
+  for (const [selector, title, key] of [['.welcome-panel', 'Welcome panel', 'welcome'], ['.stats', 'Site overview', 'stats'], ['.dashboard-tools', 'Management shortcuts', 'tools']]) {
+    const target = main.querySelector(selector);
+    if (!target) continue;
+    const label = create('label', '', title);
+    const checkbox = create('input'); checkbox.type = 'checkbox'; checkbox.checked = preferences[key] !== false;
+    target.hidden = !checkbox.checked;
+    checkbox.addEventListener('change', () => { target.hidden = !checkbox.checked; preferences[key] = checkbox.checked; save(); });
+    label.prepend(checkbox); fields.append(label);
+  }
+  options.append(fields); main.querySelector('.admin-top')?.after(options);
+  document.querySelectorAll('.status').forEach(el => { el.dataset.status = el.textContent.trim().toLowerCase(); });
+  main.querySelectorAll('.admin-table').forEach(table => {
+    const body = table.querySelector('.table-body');
+    if (!body) return;
+    const rows = [...body.querySelectorAll(':scope > .table-row')];
+    const controls = create('div', 'table-controls');
+    const search = create('input'); search.type = 'search'; search.placeholder = 'Search this list…'; search.setAttribute('aria-label', 'Search this list');
+    const status = create('select'); status.setAttribute('aria-label', 'Filter by status');
+    const all = create('option', '', 'All statuses'); all.value = ''; status.append(all);
+    const statuses = [...new Set(rows.map(row => row.querySelector('.status')?.textContent.trim()).filter(Boolean))];
+    statuses.forEach(value => { const option = create('option', '', value); option.value = value; status.append(option); });
+    const sort = create('select'); sort.setAttribute('aria-label', 'Sort content');
+    for (const [value, label] of [['default', 'Default order'], ['az', 'Title: A–Z'], ['za', 'Title: Z–A']]) { const option = create('option', '', label); option.value = value; sort.append(option); }
+    const count = create('span', 'table-count'); count.setAttribute('aria-live', 'polite');
+    controls.append(search); if (statuses.length) controls.append(status); controls.append(sort, count);
+    const wrapper = table.closest('.table-wrap') || table;
+    wrapper.before(controls);
+    const empty = create('p', 'table-empty', 'No content matches your search.'); empty.hidden = true; wrapper.after(empty);
+    const pagination = create('div', 'table-pagination');
+    const previous = create('button', 'ghost', '← Previous'); previous.type = 'button';
+    const next = create('button', 'ghost', 'Next →'); next.type = 'button';
+    const pageLabel = create('span', 'table-count');
+    pagination.append(previous, pageLabel, next); empty.after(pagination);
+    let page = 1;
+    const render = () => {
+      const query = search.value.trim().toLowerCase();
+      const filtered = rows.filter(row => row.textContent.toLowerCase().includes(query) && (!status.value || row.querySelector('.status')?.textContent.trim() === status.value));
+      if (sort.value !== 'default') filtered.sort((a, b) => (a.querySelector('.cell')?.textContent || '').localeCompare(b.querySelector('.cell')?.textContent || '') * (sort.value === 'za' ? -1 : 1));
+      const pages = Math.max(1, Math.ceil(filtered.length / 10)); page = Math.min(page, pages);
+      rows.forEach(row => { row.hidden = true; });
+      filtered.slice((page - 1) * 10, page * 10).forEach(row => { row.hidden = false; body.append(row); });
+      count.textContent = `${filtered.length} item${filtered.length === 1 ? '' : 's'}`;
+      empty.hidden = filtered.length !== 0; pagination.hidden = filtered.length <= 10;
+      pageLabel.textContent = `Page ${page} of ${pages}`; previous.disabled = page <= 1; next.disabled = page >= pages;
+    };
+    search.addEventListener('input', () => { page = 1; render(); });
+    status.addEventListener('change', () => { page = 1; render(); });
+    sort.addEventListener('change', () => { page = 1; render(); });
+    previous.addEventListener('click', () => { page--; render(); }); next.addEventListener('click', () => { page++; render(); }); render();
+  });
+  const footer = create('footer', 'admin-footer');
+  footer.append(create('span', '', 'Built for publishing. Powered by Noderyx.'), create('span', '', 'CMS workspace'));
+  main.append(footer);
+})();
+
+// Confirm irreversible workspace deletions without affecting other CMS forms.
+document.querySelectorAll('form[data-confirm]').forEach(form => {
+  form.addEventListener('submit', event => {
+    if (!window.confirm(form.dataset.confirm)) event.preventDefault();
+  });
+});
