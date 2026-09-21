@@ -5,6 +5,11 @@ export class AdminController extends Controller {
   get user() { return this.context.session.user; }
   guard() { if (!this.user) { this.redirect("/nodecms/login"); return false; } return true; }
   adminGuard() { if (!this.guard()) return false; if (this.user.role !== "Administrator") { this.context.abort(403, "Administrator access is required"); return false; } return true; }
+  async permissionGuard(permission) {
+    if (!this.guard()) return false;
+    if (!(await this.store().can(this.user.role, permission))) { this.context.abort(403, "You don't have permission to do that."); return false; }
+    return true;
+  }
   redirect(location) {
     this.context.response.baseHeaders.location = location;
     return this.context.text("", 303);
@@ -14,7 +19,7 @@ export class AdminController extends Controller {
   async logout() { delete this.context.session.user; return this.redirect("/nodecms/login"); }
   async dashboard() { if (!this.guard()) return; const { data, counts } = await this.store().dashboard(); return this.render("admin/dashboard", { user: this.user, counts, posts: data.posts.slice().reverse().slice(0, 6) }); }
   async posts() {
-    if (!this.guard()) return;
+    if (!(await this.permissionGuard("content"))) return;
     const { data } = await this.store().dashboard();
     const type = this.query.type === "page" ? "page" : "post";
     const status = ["draft", "published"].includes(this.query.status) ? this.query.status : null;
@@ -24,11 +29,11 @@ export class AdminController extends Controller {
     return this.render("admin/posts", { user: this.user, type, heading, posts });
   }
 
-  async editor() { if (!this.guard()) return; const { data } = await this.store().dashboard(); const post = data.posts.find((p) => p.id === Number(this.params.id)) ?? {}; const type = post.type ?? (this.query.type === "page" ? "page" : "post"); return this.render("admin/editor", { user: this.user, post, builderData: JSON.stringify(post.blocks ?? []), builderMedia: JSON.stringify(data.media.map(item => ({ url: item.url, title: item.title, alt: item.alt }))), categories: data.categories.map(category => ({ ...category, selected: category.id === post.categoryId })), type, heading: post.id ? `Edit ${type}` : `Add ${type}` }); }
-  async savePost() { if (!this.guard()) return; await this.store().savePost(this.body, this.user.id); return this.redirect(`/nodecms/posts?type=${this.body.type}`); }
-  async deletePost() { if (!this.guard()) return; await this.store().deletePost(this.params.id); return this.redirect("/nodecms/posts"); }
+  async editor() { if (!(await this.permissionGuard("content"))) return; const { data } = await this.store().dashboard(); const post = data.posts.find((p) => p.id === Number(this.params.id)) ?? {}; const type = post.type ?? (this.query.type === "page" ? "page" : "post"); return this.render("admin/editor", { user: this.user, post, builderData: JSON.stringify(post.blocks ?? []), builderMedia: JSON.stringify(data.media.map(item => ({ url: item.url, title: item.title, alt: item.alt }))), categories: data.categories.map(category => ({ ...category, selected: category.id === post.categoryId })), type, heading: post.id ? `Edit ${type}` : `Add ${type}` }); }
+  async savePost() { if (!(await this.permissionGuard("content"))) return; await this.store().savePost(this.body, this.user.id); return this.redirect(`/nodecms/posts?type=${this.body.type}`); }
+  async deletePost() { if (!(await this.permissionGuard("content"))) return; await this.store().deletePost(this.params.id); return this.redirect("/nodecms/posts"); }
   async workspace() {
-    if (!this.guard()) return;
+    if (!(await this.permissionGuard("workspace"))) return;
     const kind = this.params.kind;
     if (!["tasks", "notes"].includes(kind)) return this.abort(404);
     const data = await this.store().read();
@@ -43,7 +48,7 @@ export class AdminController extends Controller {
     });
   }
   async saveWorkspace() {
-    if (!this.guard()) return;
+    if (!(await this.permissionGuard("workspace"))) return;
     const kind = this.params.kind;
     if (!["tasks", "notes"].includes(kind)) return this.abort(404);
     try { await this.store().saveWorkspaceItem(kind, this.body, this.user.id); }
@@ -51,30 +56,32 @@ export class AdminController extends Controller {
     return this.redirect(`/nodecms/workspace/${kind}?saved=1`);
   }
   async deleteWorkspace() {
-    if (!this.guard()) return;
+    if (!(await this.permissionGuard("workspace"))) return;
     const kind = this.params.kind;
     if (!["tasks", "notes"].includes(kind)) return this.abort(404);
     await this.store().deleteWorkspaceItem(kind, this.params.id);
     return this.redirect(`/nodecms/workspace/${kind}?deleted=1`);
   }
-  async categories() { if (!this.guard()) return; const { data } = await this.store().dashboard(); return this.render("admin/categories", { user: this.user, categories: data.categories }); }
-  async addCategory() { if (!this.guard()) return; if (this.body.name) await this.store().addCategory(this.body); return this.redirect("/nodecms/categories"); }
-  async media() { if (!this.guard()) return; const { data } = await this.store().dashboard(); return this.render("admin/media", { user: this.user, media: data.media }); }
-  async addMedia() { if (!this.guard()) return; await this.store().addMedia(this.body); return this.redirect("/nodecms/media"); }
-  async deleteMedia() { if (!this.guard()) return; await this.store().deleteMedia(this.params.id); return this.redirect("/nodecms/media"); }
-  async settings() { if (!this.adminGuard()) return; const { data } = await this.store().dashboard(); const theme = this.service("themes").get(data.settings.theme); return this.render("admin/settings", { user: this.user, settings: { ...data.settings, theme: theme.id }, theme }); }
-  async saveSettings() { if (!this.adminGuard()) return; await this.store().saveSettings(this.body); return this.redirect("/nodecms/settings?saved=1"); }
-  async themes() { if (!this.adminGuard()) return; const { data } = await this.store().dashboard(); return this.render("admin/themes", { user: this.user, themes: this.service("themes").all(), activeTheme: data.settings.theme, uploadError: this.query.error === "1" }); }
-  async activateTheme() { if (!this.adminGuard()) return; if (this.service("themes").has(this.body.theme)) await this.store().activateTheme(this.body.theme); return this.redirect("/nodecms/themes?activated=1"); }
-  async uploadTheme() { if (!this.adminGuard()) return; try { const theme = await this.service("archives").installTheme(this.body.dataUrl); this.service("themes").register(theme); return this.json({ ok: true, theme }); } catch (error) { return this.json({ ok: false, error: error.message }, 400); } }
+  async categories() { if (!(await this.permissionGuard("categories"))) return; const { data } = await this.store().dashboard(); return this.render("admin/categories", { user: this.user, categories: data.categories }); }
+  async addCategory() { if (!(await this.permissionGuard("categories"))) return; if (this.body.name) await this.store().addCategory(this.body); return this.redirect("/nodecms/categories"); }
+  async media() { if (!(await this.permissionGuard("media"))) return; const { data } = await this.store().dashboard(); return this.render("admin/media", { user: this.user, media: data.media }); }
+  async addMedia() { if (!(await this.permissionGuard("media"))) return; await this.store().addMedia(this.body); return this.redirect("/nodecms/media"); }
+  async deleteMedia() { if (!(await this.permissionGuard("media"))) return; await this.store().deleteMedia(this.params.id); return this.redirect("/nodecms/media"); }
+  async settings() { if (!(await this.permissionGuard("settings"))) return; const { data } = await this.store().dashboard(); const theme = this.service("themes").get(data.settings.theme); return this.render("admin/settings", { user: this.user, settings: { ...data.settings, theme: theme.id }, theme }); }
+  async saveSettings() { if (!(await this.permissionGuard("settings"))) return; await this.store().saveSettings(this.body); return this.redirect("/nodecms/settings?saved=1"); }
+  async themes() { if (!(await this.permissionGuard("themes"))) return; const { data } = await this.store().dashboard(); return this.render("admin/themes", { user: this.user, themes: this.service("themes").all(), activeTheme: data.settings.theme, uploadError: this.query.error === "1" }); }
+  async activateTheme() { if (!(await this.permissionGuard("themes"))) return; if (this.service("themes").has(this.body.theme)) await this.store().activateTheme(this.body.theme); return this.redirect("/nodecms/themes?activated=1"); }
+  async uploadTheme() { if (!(await this.permissionGuard("themes"))) return; try { const theme = await this.service("archives").installTheme(this.body.dataUrl); this.service("themes").register(theme); return this.json({ ok: true, theme }); } catch (error) { return this.json({ ok: false, error: error.message }, 400); } }
   async users() { if (!this.adminGuard()) return; const { data } = await this.store().dashboard(); return this.render("admin/users", { user: this.user, users: data.users, error: this.query.error === "1" }); }
   async addUser() { if (!this.adminGuard()) return; try { await this.store().addUser(this.body); } catch { return this.redirect("/nodecms/users?error=1"); } return this.redirect("/nodecms/users"); }
   async deleteUser() { if (!this.adminGuard()) return; await this.store().deleteUser(this.params.id, this.user.id); return this.redirect("/nodecms/users"); }
-  async menus() { if (!this.guard()) return; const { data } = await this.store().dashboard(); const menu = data.menus.find((item) => item.location === "primary") ?? { items: [] }; return this.render("admin/menus", { user: this.user, menu, pages: data.posts.filter((post) => post.type === "page"), categories: data.categories }); }
-  async saveMenu() { if (!this.guard()) return; let rows; try { rows = JSON.parse(String(this.body.items ?? "[]")); } catch { rows = String(this.body.items ?? "").split(/\r?\n/).map((row) => { const [label, url] = row.split("|"); return { label, url }; }); } await this.store().saveMenu({ label: rows.map((row) => row.label), url: rows.map((row) => row.url) }); return this.redirect("/nodecms/menus?saved=1"); }
+  async roles() { if (!this.adminGuard()) return; const catalog = this.store().permissionCatalog(); const permissions = await this.store().rolePermissions(); const roles = ["Editor", "Author"].map((role) => ({ name: role, permissions: catalog.map((permission) => ({ ...permission, checked: Boolean(permissions[role]?.[permission.id]) })) })); return this.render("admin/roles", { user: this.user, roles, saved: this.query.saved === "1" }); }
+  async saveRoles() { if (!this.adminGuard()) return; await this.store().saveRolePermissions(this.body); return this.redirect("/nodecms/roles?saved=1"); }
+  async menus() { if (!(await this.permissionGuard("menus"))) return; const { data } = await this.store().dashboard(); const menu = data.menus.find((item) => item.location === "primary") ?? { items: [] }; return this.render("admin/menus", { user: this.user, menu, pages: data.posts.filter((post) => post.type === "page"), categories: data.categories }); }
+  async saveMenu() { if (!(await this.permissionGuard("menus"))) return; let rows; try { rows = JSON.parse(String(this.body.items ?? "[]")); } catch { rows = String(this.body.items ?? "").split(/\r?\n/).map((row) => { const [label, url] = row.split("|"); return { label, url }; }); } await this.store().saveMenu({ label: rows.map((row) => row.label), url: rows.map((row) => row.url) }); return this.redirect("/nodecms/menus?saved=1"); }
   commentsBack() { const back = this.body?.redirect; return typeof back === "string" && back.startsWith("/nodecms/comments") ? back : "/nodecms/comments"; }
   async comments() {
-    if (!this.guard()) return;
+    if (!(await this.permissionGuard("comments"))) return;
     const { data } = await this.store().dashboard();
     const filter = ["pending", "approved", "spam"].includes(this.query.filter) ? this.query.filter : "all";
     const postById = new Map(data.posts.map((post) => [post.id, post]));
@@ -121,18 +128,18 @@ export class AdminController extends Controller {
         : "No comments match this filter."
     });
   }
-  async moderateComment() { if (!this.guard()) return; await this.store().moderateComment(this.params.id, this.body.status); return this.redirect(this.commentsBack()); }
-  async replyComment() { if (!this.guard()) return; await this.store().replyToComment(this.params.id, this.body, this.user); return this.redirect(this.commentsBack()); }
-  async deleteComment() { if (!this.guard()) return; await this.store().deleteComment(this.params.id); return this.redirect(this.commentsBack()); }
-  async revisions() { if (!this.guard()) return; const { data } = await this.store().dashboard(); const revisions = data.revisions.filter((revision) => revision.postId === Number(this.params.id)).reverse(); const post = data.posts.find((item) => item.id === Number(this.params.id)); return this.render("admin/revisions", { user: this.user, revisions, post }); }
-  async restoreRevision() { if (!this.guard()) return; await this.store().restoreRevision(this.params.id); return this.redirect(`/nodecms/posts/${this.body.postId}/edit`); }
-  async backups() { if (!this.adminGuard()) return; return this.render("admin/backups", { user: this.user, backups: await this.store().backups(), destinations: await this.store().backupDestinations(), created: this.query.created === "1", restored: this.query.restored === "1", deleted: this.query.deleted === "1", pushed: this.query.pushed ?? "", error: this.query.error ?? "" }); }
-  async createBackup() { if (!this.adminGuard()) return; const { remote } = await this.store().createBackup(this.body.destination || "local"); const params = new URLSearchParams({ created: "1" }); if (remote?.ok) params.set("pushed", remote.label); else if (remote && !remote.ok) params.set("error", `${remote.label}: ${remote.error}`); return this.redirect(`/nodecms/backups?${params}`); }
-  async downloadBackup() { if (!this.adminGuard()) return; let contents; try { contents = await this.store().readBackup(this.params.name); } catch { return this.context.abort(404, "Backup not found"); } this.context.response.baseHeaders["content-disposition"] = `attachment; filename="${this.params.name}"`; return this.context.text(contents, 200, "application/json; charset=utf-8"); }
-  async restoreBackup() { if (!this.adminGuard()) return; try { await this.store().restoreBackup(this.params.name); } catch (error) { return this.redirect(`/nodecms/backups?error=${encodeURIComponent(error.message)}`); } return this.redirect("/nodecms/backups?restored=1"); }
-  async deleteBackup() { if (!this.adminGuard()) return; await this.store().deleteBackup(this.params.name); return this.redirect("/nodecms/backups?deleted=1"); }
+  async moderateComment() { if (!(await this.permissionGuard("comments"))) return; await this.store().moderateComment(this.params.id, this.body.status); return this.redirect(this.commentsBack()); }
+  async replyComment() { if (!(await this.permissionGuard("comments"))) return; await this.store().replyToComment(this.params.id, this.body, this.user); return this.redirect(this.commentsBack()); }
+  async deleteComment() { if (!(await this.permissionGuard("comments"))) return; await this.store().deleteComment(this.params.id); return this.redirect(this.commentsBack()); }
+  async revisions() { if (!(await this.permissionGuard("content"))) return; const { data } = await this.store().dashboard(); const revisions = data.revisions.filter((revision) => revision.postId === Number(this.params.id)).reverse(); const post = data.posts.find((item) => item.id === Number(this.params.id)); return this.render("admin/revisions", { user: this.user, revisions, post }); }
+  async restoreRevision() { if (!(await this.permissionGuard("content"))) return; await this.store().restoreRevision(this.params.id); return this.redirect(`/nodecms/posts/${this.body.postId}/edit`); }
+  async backups() { if (!(await this.permissionGuard("backups"))) return; return this.render("admin/backups", { user: this.user, backups: await this.store().backups(), destinations: await this.store().backupDestinations(), created: this.query.created === "1", restored: this.query.restored === "1", deleted: this.query.deleted === "1", pushed: this.query.pushed ?? "", error: this.query.error ?? "" }); }
+  async createBackup() { if (!(await this.permissionGuard("backups"))) return; const { remote } = await this.store().createBackup(this.body.destination || "local"); const params = new URLSearchParams({ created: "1" }); if (remote?.ok) params.set("pushed", remote.label); else if (remote && !remote.ok) params.set("error", `${remote.label}: ${remote.error}`); return this.redirect(`/nodecms/backups?${params}`); }
+  async downloadBackup() { if (!(await this.permissionGuard("backups"))) return; let contents; try { contents = await this.store().readBackup(this.params.name); } catch { return this.context.abort(404, "Backup not found"); } this.context.response.baseHeaders["content-disposition"] = `attachment; filename="${this.params.name}"`; return this.context.text(contents, 200, "application/json; charset=utf-8"); }
+  async restoreBackup() { if (!(await this.permissionGuard("backups"))) return; try { await this.store().restoreBackup(this.params.name); } catch (error) { return this.redirect(`/nodecms/backups?error=${encodeURIComponent(error.message)}`); } return this.redirect("/nodecms/backups?restored=1"); }
+  async deleteBackup() { if (!(await this.permissionGuard("backups"))) return; await this.store().deleteBackup(this.params.name); return this.redirect("/nodecms/backups?deleted=1"); }
   async integrations() {
-    if (!this.adminGuard()) return;
+    if (!(await this.permissionGuard("integrations"))) return;
     const store = this.store();
     const config = await store.integrations();
     const mask = (value) => (value ? "•••••••• saved" : "");
@@ -158,7 +165,7 @@ export class AdminController extends Controller {
     });
     return this.render("admin/integrations", { user: this.user, saved: this.query.saved === "1", categories });
   }
-  async saveIntegrations() { if (!this.adminGuard()) return; await this.store().saveIntegrations(this.body); return this.redirect("/nodecms/integrations?saved=1"); }
-  async plugins() { if (!this.adminGuard()) return; return this.render("admin/plugins", { user: this.user, plugins: await this.service("plugins").all() }); }
-  async uploadPlugin() { if (!this.adminGuard()) return; try { const plugin = await this.service("archives").installPlugin(this.body.dataUrl); return this.json({ ok: true, plugin, restartRequired: true }); } catch (error) { return this.json({ ok: false, error: error.message }, 400); } }
+  async saveIntegrations() { if (!(await this.permissionGuard("integrations"))) return; await this.store().saveIntegrations(this.body); return this.redirect("/nodecms/integrations?saved=1"); }
+  async plugins() { if (!(await this.permissionGuard("plugins"))) return; return this.render("admin/plugins", { user: this.user, plugins: await this.service("plugins").all() }); }
+  async uploadPlugin() { if (!(await this.permissionGuard("plugins"))) return; try { const plugin = await this.service("archives").installPlugin(this.body.dataUrl); return this.json({ ok: true, plugin, restartRequired: true }); } catch (error) { return this.json({ ok: false, error: error.message }, 400); } }
 }

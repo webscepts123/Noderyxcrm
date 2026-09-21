@@ -1,0 +1,65 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Roles & permissions — Noderyx CMS"
+    link rel="stylesheet" href="/public/cms.css"
+    link rel="stylesheet" href="/public/cms-workspace.css"
+    script src="/public/cms-admin.js" defer=""
+  body.admin-body
+    div.sidebar
+      a.admin-brand href="/nodecms" "Noderyx CMS"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Workspace"
+        a href="/nodecms/workspace/tasks" "Editorial tasks"
+        a href="/nodecms/workspace/notes" "Team notes"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a.active href="/nodecms/roles" "Roles & permissions"
+        a href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+      form.logout method="post" action="/nodecms/logout"
+        input type="hidden" name="_csrf" value="{{csrfToken}}"
+        button type="submit" "Sign out"
+    a.skip-link href="#workspace" "Skip to content"
+    header.cms-toolbar
+      a.toolbar-site href="/" "N / Visit site ↗"
+      span.toolbar-label "Administration"
+      a.toolbar-new href="/nodecms/posts/new" "+ New content"
+      span.toolbar-user "{{user.name}}"
+    main.admin-main id="workspace"
+      header.admin-top
+        div
+          p.kicker "Access"
+          h1 "Roles & permissions"
+        a.button href="/nodecms/users" "Back to users"
+      if saved
+        div.notice.success "Role permissions saved."
+      p.muted "Administrator always has full access and can't be limited here. Turn areas on or off for the Editor and Author roles below, then save."
+      form method="post" action="/nodecms/roles"
+        input type="hidden" name="_csrf" value="{{csrfToken}}"
+        section.dashboard-tools
+          for role in roles
+            article.panel
+              div.panel-head
+                h2 "{{role.name}}"
+              for permission in role.permissions
+                label.checkbox-row
+                  if permission.checked
+                    input type="checkbox" name="{{role.name}}__{{permission.id}}" checked=""
+                  else
+                    input type="checkbox" name="{{role.name}}__{{permission.id}}"
+                  span "{{permission.label}} — {{permission.description}}"
+        button.primary type="submit" "Save role permissions"

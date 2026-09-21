@@ -45,6 +45,8 @@ export function registerCmsRoutes(app) {
   app.get(`${CMS_PATH}/users`, AdminController.handle("users"));
   app.post(`${CMS_PATH}/users`, AdminController.handle("addUser"));
   app.post(`${CMS_PATH}/users/:id/delete`, AdminController.handle("deleteUser"));
+  app.get(`${CMS_PATH}/roles`, AdminController.handle("roles"));
+  app.post(`${CMS_PATH}/roles`, AdminController.handle("saveRoles"));
   app.get(`${CMS_PATH}/menus`, AdminController.handle("menus"));
   app.post(`${CMS_PATH}/menus`, AdminController.handle("saveMenu"));
   app.get(`${CMS_PATH}/comments`, AdminController.handle("comments"));

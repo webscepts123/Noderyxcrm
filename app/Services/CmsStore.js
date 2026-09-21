@@ -15,11 +15,32 @@ function hashPassword(password) {
   return `${salt}:${scryptSync(password, salt, 64).toString("hex")}`;
 }
 
+const ROLES = ["Administrator", "Editor", "Author"];
+const PERMISSION_CATALOG = [
+  { id: "content", label: "Posts & pages", description: "Create, edit, publish, and delete posts and pages." },
+  { id: "media", label: "Media library", description: "Upload and manage images and files." },
+  { id: "categories", label: "Categories", description: "Create and manage content categories." },
+  { id: "comments", label: "Comments", description: "Moderate, reply to, and delete comments." },
+  { id: "menus", label: "Menus", description: "Edit the site navigation menu." },
+  { id: "workspace", label: "Editorial workspace", description: "Manage editorial tasks and team notes." },
+  { id: "settings", label: "Settings & SEO", description: "Change site settings and SEO defaults." },
+  { id: "themes", label: "Themes", description: "Activate and upload themes." },
+  { id: "plugins", label: "Plugins", description: "Install and manage plugins." },
+  { id: "backups", label: "Backups", description: "Create, download, restore, and delete backups." },
+  { id: "integrations", label: "Integrations", description: "Connect third-party services." }
+];
+const ADMIN_ONLY_PERMISSIONS = ["settings", "themes", "plugins", "backups", "integrations"];
+
 export class CmsStore {
   constructor(file = join(process.cwd(), "storage", "cms.json")) {
     this.file = file;
     this.queue = Promise.resolve();
     this.vault = new BackupManager(join(dirname(file), "backups"));
+  }
+
+  permissionCatalog() { return PERMISSION_CATALOG; }
+  defaultPermissionsFor(role) {
+    return Object.fromEntries(PERMISSION_CATALOG.map((permission) => [permission.id, role === "Administrator" || !ADMIN_ONLY_PERMISSIONS.includes(permission.id)]));
   }
 
   async initialize() {
@@ -38,7 +59,9 @@ export class CmsStore {
         media: [],
         comments: [],
         menus: [{ id: 1, name: "Primary", location: "primary", items: [{ id: 1, label: "Home", url: "/", order: 1 }] }],
-        revisions: []
+        revisions: [],
+        integrations: {},
+        rolePermissions: Object.fromEntries(ROLES.map((role) => [role, this.defaultPermissionsFor(role)]))
       });
     }
     return this;
@@ -54,6 +77,16 @@ export class CmsStore {
     const settings = { metaTitle: "", metaDescription: data.settings.description ?? "", socialImage: "", indexSite: true };
     for (const [key, value] of Object.entries(settings)) if (data.settings[key] === undefined) { data.settings[key] = value; changed = true; }
     if (!data.integrations || typeof data.integrations !== "object") { data.integrations = {}; changed = true; }
+    if (!data.rolePermissions || typeof data.rolePermissions !== "object") { data.rolePermissions = {}; changed = true; }
+    for (const role of ROLES) {
+      const defaults = this.defaultPermissionsFor(role);
+      if (!data.rolePermissions[role] || typeof data.rolePermissions[role] !== "object") { data.rolePermissions[role] = { ...defaults }; changed = true; continue; }
+      for (const permission of PERMISSION_CATALOG) {
+        const forced = role === "Administrator";
+        const value = forced ? true : Boolean(data.rolePermissions[role][permission.id] ?? defaults[permission.id]);
+        if (data.rolePermissions[role][permission.id] !== value) { data.rolePermissions[role][permission.id] = value; changed = true; }
+      }
+    }
     return changed;
   }
 
@@ -167,6 +200,20 @@ export class CmsStore {
 
   async addUser(input) { return this.mutate((data) => { const email = String(input.email).trim().toLowerCase(); if (data.users.some((u) => u.email.toLowerCase() === email)) throw new Error("Email already exists"); data.users.push({ id: Math.max(0, ...data.users.map((u) => u.id)) + 1, name: String(input.name).trim(), email, password: hashPassword(String(input.password)), role: ["Administrator", "Editor", "Author"].includes(input.role) ? input.role : "Author", createdAt: now() }); }); }
   async deleteUser(id, currentUserId) { return this.mutate((data) => { const user = data.users.find((item) => item.id === Number(id)); if (!user || user.id === Number(currentUserId)) return; if (user.role === "Administrator" && data.users.filter((item) => item.role === "Administrator").length === 1) return; data.users = data.users.filter((item) => item.id !== user.id); }); }
+
+  async rolePermissions() { const data = await this.read(); return data.rolePermissions ?? Object.fromEntries(ROLES.map((role) => [role, this.defaultPermissionsFor(role)])); }
+  async can(role, permissionId) { const permissions = await this.rolePermissions(); return role === "Administrator" || Boolean(permissions[role]?.[permissionId]); }
+  async saveRolePermissions(input) {
+    return this.mutate((data) => {
+      data.rolePermissions ??= {};
+      for (const role of ROLES) {
+        data.rolePermissions[role] = Object.fromEntries(PERMISSION_CATALOG.map((permission) => [
+          permission.id,
+          role === "Administrator" ? true : input[`${role}__${permission.id}`] === "on"
+        ]));
+      }
+    });
+  }
 
   async saveMenu(input) { return this.mutate((data) => { const menu = data.menus.find((m) => m.location === "primary") ?? { id: 1, name: "Primary", location: "primary", items: [] }; if (!data.menus.includes(menu)) data.menus.push(menu); const labels = Array.isArray(input.label) ? input.label : [input.label].filter(Boolean); const urls = Array.isArray(input.url) ? input.url : [input.url].filter(Boolean); menu.items = labels.map((label, index) => ({ id: index + 1, label: String(label).trim(), url: String(urls[index] ?? "/").trim(), order: index + 1 })).filter((item) => item.label); }); }
 

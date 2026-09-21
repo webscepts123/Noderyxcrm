@@ -68,6 +68,69 @@ html lang="en"
                   ul
                     for line in block.lines
                       li "{{line}}"
+                if block.type == "testimonial"
+                  p.nvb-quote "{{block.text}}"
+                  span.nvb-person "{{block.name}}"
+                    if block.role
+                      span "{{block.role}}"
+                if block.type == "icon-box"
+                  div.nvb-ib-mark
+                  h3 "{{block.text}}"
+                  p "{{block.alt}}"
+                if block.type == "counter"
+                  strong "{{block.text}}"
+                  span "{{block.alt}}"
+                if block.type == "progress"
+                  div.nvb-progress-label
+                    span "{{block.progressLabel}}"
+                    span "{{block.progressPercent}}%"
+                  div.nvb-progress-track
+                    div class="nvb-progress-fill nvb-p{{block.progressPercent}}"
+                if block.type == "alert"
+                  if block.alt
+                    strong "{{block.alt}}"
+                  p "{{block.text}}"
+                if block.type == "team"
+                  if block.url
+                    img.nvb-image src="{{block.url}}" alt="{{block.text}}"
+                  h3 "{{block.text}}"
+                  if block.alt
+                    span.nvb-person-role "{{block.alt}}"
+                if block.type == "social-icons"
+                  div.nvb-social
+                    for item in block.items
+                      a href="{{item.url}}" "{{item.label}}"
+                if block.type == "accordion"
+                  for item, i in block.items
+                    input type="checkbox" id="acc-{{block.index}}-{{i}}" class="nvb-accordion-input"
+                    label.nvb-accordion-label for="acc-{{block.index}}-{{i}}" "{{item.q}}"
+                    div.nvb-accordion-panel "{{item.a}}"
+                if block.type == "tabs"
+                  for item, i in block.items
+                    if i == 0
+                      input type="radio" name="tabs-{{block.index}}" id="tabs-{{block.index}}-{{i}}" class="nvb-tab-input" checked=""
+                    else
+                      input type="radio" name="tabs-{{block.index}}" id="tabs-{{block.index}}-{{i}}" class="nvb-tab-input"
+                    label.nvb-tab-label for="tabs-{{block.index}}-{{i}}" "{{item.q}}"
+                    div.nvb-tab-panel "{{item.a}}"
+                if block.type == "pricing"
+                  div.nvb-pricing
+                    h3 "{{block.text}}"
+                    span.nvb-price "{{block.price}}"
+                    ul
+                      for feature in block.features
+                        li "{{feature}}"
+                    if block.url
+                      a.nvb-button href="{{block.url}}" "Choose plan"
+                if block.type == "table"
+                  div class="nvb-table nvb-cols-{{block.columnCount}}"
+                    for row in block.rows
+                      if row.header
+                        for cell in row.cells
+                          span.nvb-cell.nvb-cell-head "{{cell}}"
+                      else
+                        for cell in row.cells
+                          span.nvb-cell "{{cell}}"
           else
             p "{{post.content}}"
         if allowComments

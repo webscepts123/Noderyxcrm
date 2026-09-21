@@ -63,5 +63,46 @@
       ]
     }
   ],
-  "integrations": {}
+  "integrations": {},
+  "rolePermissions": {
+    "Administrator": {
+      "content": true,
+      "media": true,
+      "categories": true,
+      "comments": true,
+      "menus": true,
+      "workspace": true,
+      "settings": true,
+      "themes": true,
+      "plugins": true,
+      "backups": true,
+      "integrations": true
+    },
+    "Editor": {
+      "content": true,
+      "media": true,
+      "categories": true,
+      "comments": true,
+      "menus": true,
+      "workspace": true,
+      "settings": false,
+      "themes": false,
+      "plugins": false,
+      "backups": false,
+      "integrations": false
+    },
+    "Author": {
+      "content": true,
+      "media": true,
+      "categories": true,
+      "comments": true,
+      "menus": true,
+      "workspace": true,
+      "settings": false,
+      "themes": false,
+      "plugins": false,
+      "backups": false,
+      "integrations": false
+    }
+  }
 }

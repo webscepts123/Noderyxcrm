@@ -411,12 +411,20 @@
     try { localStorage.setItem(STORE, JSON.stringify(state)); } catch { /* per-visit only */ }
   };
 
-  // 1. Make sure exactly one link reflects the current page.
+  // 1. Make sure exactly one link reflects the current page. The server
+  // already renders the correct link as active for every screen (it alone
+  // knows things like editing a page vs. a post from a query string), so a
+  // server-rendered choice whose path is still relevant here is kept as-is;
+  // this only computes a guess when the server left nothing active.
   const links = [...nav.querySelectorAll("a")];
   let active;
   const updateActive = () => {
     const here = location.pathname + location.search + location.hash;
+    const rendered = links.find(a => a.classList.contains("active"));
+    const renderedPath = rendered ? new URL(rendered.getAttribute("href"), location.origin).pathname : null;
+    const renderedStillRelevant = rendered && (location.pathname === renderedPath || location.pathname.startsWith(renderedPath + "/"));
     active = links.find(a => a.getAttribute("href") === here)
+      || (renderedStillRelevant ? rendered : null)
       || links.filter(a => {
         const href = a.getAttribute("href");
         return href !== "/" && href !== "/nodecms" && (here.startsWith(href + "/") || here.startsWith(href + "?") || here.startsWith(href + "#"));
