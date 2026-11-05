@@ -1,6 +1,6 @@
 {
   "name": "create-noderyxcrm",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Noderyx CRM/CMS with a visual builder, publishing tools, and a WordPress-style admin workspace.",
   "type": "module",
   "license": "MIT",
@@ -62,7 +62,7 @@
     "prepublishOnly": "npm test && npm run build"
   },
   "dependencies": {
-    "adm-zip": "^0.6.0",
+    "adm-zip": "^0.6.1",
     "noderyx-framework": "^0.9.0"
   },
   "repository": {

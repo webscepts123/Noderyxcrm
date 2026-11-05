@@ -44,24 +44,90 @@ html lang="en"
         div
           p.kicker "Extensions"
           h1 "Plugins"
-      form.panel.upload-panel.archive-upload-form id="install-plugin" action="/nodecms/plugins/upload" data-redirect="/nodecms/plugins"
-        input type="hidden" name="_csrf" value="{{csrfToken}}"
-        div
-          h2 "Upload plugin"
-          p.muted "ZIP must contain package.json. Uploaded plugins load after restarting the app."
-        input type="file" name="archive" accept=".zip,application/zip" required=""
-        button.primary type="submit" "Install plugin"
-        span.upload-message aria-live="polite"
-      section.plugin-grid
-        for plugin in plugins
-          article.panel.plugin-card
-            div.plugin-head
-              div.plugin-icon "N"
-              div
-                h2 "{{plugin.name}}"
-                span.status "{{plugin.status}}"
-            p.muted "{{plugin.description}}"
-            span.plugin-meta "{{plugin.source}} plugin · {{plugin.id}}"
-            if plugin.id == "visual-builder"
-              p
-                a.button href="/nodecms/posts/new?type=page&builder=1" "Create with builder"
+          p.muted.plugin-summary "{{activeCount}} of {{total}} plugins active"
+      if notice
+        div.notice.success.plugin-notice role="status" "{{notice}}"
+      if error
+        div.notice.error.plugin-notice role="alert" "{{error}}"
+      if restartPending
+        div.notice.info.plugin-notice role="status" "{{restartCount}} plugin change(s) take effect after the app restarts."
+      section.panel.plugin-upload id="add-plugin"
+        button.plugin-upload-toggle type="button" aria-expanded="false" aria-controls="install-plugin"
+          span.plugin-upload-title "Add new plugin"
+          span.muted "Upload a plugin in .zip format"
+        form.upload-panel.archive-upload-form id="install-plugin" action="/nodecms/plugins/upload" data-redirect="/nodecms/plugins?done=installed"
+          input type="hidden" name="_csrf" value="{{csrfToken}}"
+          div
+            h2 "Upload plugin"
+            p.muted "The archive must contain a package.json. Plugins load after the app restarts."
+          input type="file" name="archive" accept=".zip,application/zip" required=""
+          button.primary type="submit" "Install now"
+          span.upload-message aria-live="polite"
+      div.plugin-toolbar
+        nav.plugin-tabs aria-label="Filter plugins"
+          for tab in tabs
+            if tab.active
+              a.plugin-tab.is-active href="{{tab.href}}" aria-current="page"
+                span "{{tab.label}}"
+                span.plugin-tab-count "{{tab.count}}"
+            else
+              a.plugin-tab href="{{tab.href}}"
+                span "{{tab.label}}"
+                span.plugin-tab-count "{{tab.count}}"
+        label.plugin-search
+          span.sr-only "Search installed plugins"
+          input type="search" id="plugin-search" placeholder="Search installed plugins…" autocomplete="off"
+      if empty
+        div.panel.plugin-empty
+          strong "No plugins in this view"
+          p.muted "Try another filter, or upload a plugin to extend your site."
+      else
+        section.panel.plugin-list aria-label="Installed plugins"
+          div.plugin-list-head aria-hidden="true"
+            span "Plugin"
+            span "Description"
+            span "Status"
+          for plugin in plugins
+            article.plugin-row data-status="{{plugin.state}}" data-search="{{plugin.search}}"
+              div.plugin-main
+                div.plugin-icon style="--plugin-color:{{plugin.color}}" aria-hidden="true" "{{plugin.initials}}"
+                div.plugin-title
+                  h2 "{{plugin.name}}"
+                  div.plugin-actions
+                    if plugin.actionUrl
+                      a href="{{plugin.actionUrl}}" "{{plugin.actionLabel}}"
+                    if plugin.canToggle
+                      form method="post" action="/nodecms/plugins/toggle"
+                        input type="hidden" name="_csrf" value="{{csrfToken}}"
+                        input type="hidden" name="id" value="{{plugin.id}}"
+                        if plugin.active
+                          input type="hidden" name="action" value="deactivate"
+                          button.link-btn type="submit" "Deactivate"
+                        else
+                          input type="hidden" name="action" value="activate"
+                          button.link-btn type="submit" "Activate"
+                    if plugin.canDelete
+                      form.plugin-delete method="post" action="/nodecms/plugins/delete" data-name="{{plugin.name}}"
+                        input type="hidden" name="_csrf" value="{{csrfToken}}"
+                        input type="hidden" name="id" value="{{plugin.id}}"
+                        button.link-btn.is-danger type="submit" "Delete"
+                    if plugin.isCore
+                      span.plugin-lock "Required"
+              div.plugin-body
+                p "{{plugin.description}}"
+                div.plugin-meta
+                  if plugin.version
+                    span "Version {{plugin.version}}"
+                  if plugin.author
+                    span "By {{plugin.author}}"
+                  span.plugin-chip "{{plugin.category}}"
+                  span.plugin-chip.is-source "{{plugin.source}}"
+                  if plugin.homepage
+                    a href="{{plugin.homepage}}" target="_blank" rel="noopener noreferrer" "Plugin site ↗"
+              div.plugin-state
+                span.plugin-status data-status="{{plugin.state}}" "{{plugin.status}}"
+                if plugin.restartRequired
+                  span.plugin-restart "Restart required"
+                if plugin.broken
+                  span.plugin-restart "Invalid package.json"
+          p.muted.plugin-nomatch hidden="" "No installed plugins match your search."

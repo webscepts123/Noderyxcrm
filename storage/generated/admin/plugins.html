@@ -50,19 +50,40 @@
         <div>
           <p class="kicker">Extensions</p>
           <h1>Plugins</h1>
+          <p class="muted plugin-summary"> of  plugins active</p>
         </div>
       </header>
-      <form id="install-plugin" action="/nodecms/plugins/upload" data-redirect="/nodecms/plugins" class="panel upload-panel archive-upload-form">
-        <input type="hidden" name="_csrf" value="">
-        <div>
-          <h2>Upload plugin</h2>
-          <p class="muted">ZIP must contain package.json. Uploaded plugins load after restarting the app.</p>
+      <section id="add-plugin" class="panel plugin-upload">
+        <button type="button" aria-expanded="false" aria-controls="install-plugin" class="plugin-upload-toggle">
+          <span class="plugin-upload-title">Add new plugin</span>
+          <span class="muted">Upload a plugin in .zip format</span>
+        </button>
+        <form id="install-plugin" action="/nodecms/plugins/upload" data-redirect="/nodecms/plugins?done=installed" class="upload-panel archive-upload-form">
+          <input type="hidden" name="_csrf" value="">
+          <div>
+            <h2>Upload plugin</h2>
+            <p class="muted">The archive must contain a package.json. Plugins load after the app restarts.</p>
+          </div>
+          <input type="file" name="archive" accept=".zip,application/zip" required="">
+          <button type="submit" class="primary">Install now</button>
+          <span aria-live="polite" class="upload-message"></span>
+        </form>
+      </section>
+      <div class="plugin-toolbar">
+        <nav aria-label="Filter plugins" class="plugin-tabs">
+        </nav>
+        <label class="plugin-search">
+          <span class="sr-only">Search installed plugins</span>
+          <input type="search" id="plugin-search" placeholder="Search installed plugins…" autocomplete="off">
+        </label>
+      </div>
+      <section aria-label="Installed plugins" class="panel plugin-list">
+        <div aria-hidden="true" class="plugin-list-head">
+          <span>Plugin</span>
+          <span>Description</span>
+          <span>Status</span>
         </div>
-        <input type="file" name="archive" accept=".zip,application/zip" required="">
-        <button type="submit" class="primary">Install plugin</button>
-        <span aria-live="polite" class="upload-message"></span>
-      </form>
-      <section class="plugin-grid">
+        <p hidden="" class="muted plugin-nomatch">No installed plugins match your search.</p>
       </section>
     </main>
   </body>

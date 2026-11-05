@@ -166,6 +166,35 @@ export class AdminController extends Controller {
     return this.render("admin/integrations", { user: this.user, saved: this.query.saved === "1", categories });
   }
   async saveIntegrations() { if (!(await this.permissionGuard("integrations"))) return; await this.store().saveIntegrations(this.body); return this.redirect("/nodecms/integrations?saved=1"); }
-  async plugins() { if (!(await this.permissionGuard("plugins"))) return; return this.render("admin/plugins", { user: this.user, plugins: await this.service("plugins").all() }); }
+  async plugins() {
+    if (!(await this.permissionGuard("plugins"))) return;
+    const all = await this.service("plugins").all();
+    const filters = {
+      all: { label: "All", match: () => true },
+      active: { label: "Active", match: (plugin) => plugin.active },
+      inactive: { label: "Inactive", match: (plugin) => !plugin.active },
+      core: { label: "Core", match: (plugin) => plugin.isCore },
+      installed: { label: "Installed", match: (plugin) => !plugin.isCore }
+    };
+    const filter = filters[this.query.filter] ? this.query.filter : "all";
+    const tabs = Object.entries(filters).map(([id, item]) => ({ id, label: item.label, count: all.filter(item.match).length, href: id === "all" ? "/nodecms/plugins" : `/nodecms/plugins?filter=${id}`, active: id === filter }));
+    const plugins = all.filter(filters[filter].match);
+    const notices = { installed: "Plugin installed. Restart the app to load it.", activated: "Plugin activated. Restart the app to load it.", deactivated: "Plugin deactivated. Restart the app to unload it.", deleted: "Plugin deleted." };
+    const notice = notices[this.query.done] ?? "";
+    const error = this.query.error ? String(this.query.error).slice(0, 200) : "";
+    const restartCount = all.filter((plugin) => plugin.restartRequired).length;
+    return this.render("admin/plugins", { user: this.user, plugins, tabs, filter, notice, error, restartCount, restartPending: restartCount > 0, empty: plugins.length === 0, total: all.length, activeCount: all.filter((plugin) => plugin.active).length });
+  }
+  async togglePlugin() {
+    if (!(await this.permissionGuard("plugins"))) return;
+    const active = this.body.action === "activate";
+    try { await this.service("plugins").setActive(String(this.body.id ?? ""), active); return this.redirect(`/nodecms/plugins?done=${active ? "activated" : "deactivated"}`); }
+    catch (error) { return this.redirect(`/nodecms/plugins?error=${encodeURIComponent(error.message)}`); }
+  }
+  async deletePlugin() {
+    if (!(await this.permissionGuard("plugins"))) return;
+    try { await this.service("plugins").remove(String(this.body.id ?? "")); return this.redirect("/nodecms/plugins?done=deleted"); }
+    catch (error) { return this.redirect(`/nodecms/plugins?error=${encodeURIComponent(error.message)}`); }
+  }
   async uploadPlugin() { if (!(await this.permissionGuard("plugins"))) return; try { const plugin = await this.service("archives").installPlugin(this.body.dataUrl); return this.json({ ok: true, plugin, restartRequired: true }); } catch (error) { return this.json({ ok: false, error: error.message }, 400); } }
 }

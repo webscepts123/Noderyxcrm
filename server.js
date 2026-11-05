@@ -29,13 +29,15 @@ const app = noderyx({
 app.provide("ai", ai(config.ai));
 app.provide("cms", await new CmsStore().initialize());
 app.provide("themes", new ThemeManager());
-app.provide("plugins", new PluginManager(config.packages));
+const plugins = new PluginManager(config.packages);
+app.provide("plugins", plugins);
 app.provide("archives", new ArchiveInstaller());
 
 app.use(requireCmsAuthentication);
 registerWebRoutes(app);
 registerCmsRoutes(app);
-await loadPackages(app, config.packages, { config });
+// Local plugins under packages/ load unless they were deactivated on the Plugins screen.
+await loadPackages(app, [...await plugins.enabledLocalPackages(), ...config.packages], { config, discover: false });
 
 // Phusion Passenger (cPanel) may hand the application a unix socket path in
 // PORT instead of a number, so only treat a numeric value as a TCP port.

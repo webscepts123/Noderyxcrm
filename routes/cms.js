@@ -64,4 +64,6 @@ export function registerCmsRoutes(app) {
   app.post(`${CMS_PATH}/integrations`, AdminController.handle("saveIntegrations"));
   app.get(`${CMS_PATH}/plugins`, AdminController.handle("plugins"));
   app.post(`${CMS_PATH}/plugins/upload`, AdminController.handle("uploadPlugin"));
+  app.post(`${CMS_PATH}/plugins/toggle`, AdminController.handle("togglePlugin"));
+  app.post(`${CMS_PATH}/plugins/delete`, AdminController.handle("deletePlugin"));
 }

@@ -615,3 +615,38 @@ document.querySelectorAll('form[data-confirm]').forEach(form => {
     if (!window.confirm(form.dataset.confirm)) event.preventDefault();
   });
 });
+
+// Plugins screen: instant search across installed plugins and delete confirmation.
+(() => {
+  const search = document.querySelector('#plugin-search');
+  const rows = [...document.querySelectorAll('.plugin-row')];
+  const noMatch = document.querySelector('.plugin-nomatch');
+  if (search && rows.length) {
+    search.addEventListener('input', () => {
+      const terms = search.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      let shown = 0;
+      for (const row of rows) {
+        const match = terms.every((term) => (row.dataset.search || '').includes(term));
+        row.hidden = !match;
+        if (match) shown += 1;
+      }
+      if (noMatch) noMatch.hidden = shown > 0;
+    });
+  }
+  for (const form of document.querySelectorAll('.plugin-delete')) {
+    form.addEventListener('submit', (event) => {
+      if (!confirm(`Delete "${form.dataset.name}" and all of its files? This cannot be undone.`)) event.preventDefault();
+    });
+  }
+  const upload = document.querySelector('#add-plugin');
+  const toggle = upload?.querySelector('.plugin-upload-toggle');
+  if (upload && toggle) {
+    const setOpen = (open) => {
+      upload.classList.toggle('is-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      if (open) upload.querySelector('input[type=file]')?.focus();
+    };
+    toggle.addEventListener('click', () => setOpen(!upload.classList.contains('is-open')));
+    if (location.hash === '#add-plugin') setOpen(true);
+  }
+})();
