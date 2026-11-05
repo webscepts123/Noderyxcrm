@@ -34,7 +34,7 @@
     "create"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=26"
   },
   "scripts": {
     "dev": "noderyx-framework serve --watch",
@@ -63,7 +63,7 @@
   },
   "dependencies": {
     "adm-zip": "^0.6.0",
-    "noderyx-framework": ">=0.7.1 <1.0.0"
+    "noderyx-framework": "^0.9.0"
   },
   "repository": {
     "type": "git",

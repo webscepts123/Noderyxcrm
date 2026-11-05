@@ -47,6 +47,8 @@ Theme ZIPs require `theme.json` and `style.css`; plugin ZIPs require a
 
 ## Run this project
 
+Requires Node.js 26 or newer and Noderyx Framework 0.9.x.
+
 ```powershell
 npm install
 npm run dev

@@ -8,6 +8,9 @@ when `package.json` changed, and restarts the application.
 
 ## First run
 
+Select Node.js 26 or newer for the application before deploying. Set `NODE_BIN`
+in `deployment/deploy.config` if your host does not detect it automatically.
+
     bash ~/public_html/deployment/deploy.sh init
 
 That writes `deployment/deploy.config`, which holds this account's repository,

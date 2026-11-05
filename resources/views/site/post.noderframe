@@ -10,6 +10,7 @@ html lang="en"
     link rel="stylesheet" href="/public/builder-content.css"
     if post.blocks
       link rel="stylesheet" href="/builder-style/{{post.type}}/{{post.slug}}"
+      script type="module" src="/public/builder-runtime.js"
   body.site-body data-layout="{{post.layout}}"
     header.site-header
       div.wrap.header-row
@@ -30,7 +31,9 @@ html lang="en"
         div.article-content
           if post.blocks
             for block in post.blocks
-              section.nvb-content data-block-index="{{block.index}}" data-visibility="{{block.visibility}}" data-widget="{{block.type}}"
+              section class="nvb-content {{block.classes}}" data-block-index="{{block.index}}" data-visibility="{{block.visibility}}" data-widget="{{block.type}}"
+                if block.anchor
+                  span.nvb-anchor id="{{block.anchor}}"
                 if block.type == "hero"
                   if block.url
                     img.nvb-image src="{{block.url}}" alt="{{block.alt}}"
@@ -131,6 +134,36 @@ html lang="en"
                       else
                         for cell in row.cells
                           span.nvb-cell "{{cell}}"
+                if block.type == "video"
+                  if block.url
+                    div.nvb-video-embed data-video="{{block.url}}"
+                      a.nvb-video-link href="{{block.url}}" "Play video"
+                  if block.text
+                    p.nvb-caption "{{block.text}}"
+                if block.type == "gallery"
+                  div.nvb-gallery
+                    for image in block.images
+                      img src="{{image.url}}" alt="{{image.alt}}" loading="lazy"
+                if block.type == "icon-list"
+                  ul.nvb-icon-list
+                    for line in block.lines
+                      li "{{line}}"
+                if block.type == "rating"
+                  div.nvb-rating role="img" aria-label="Rated {{block.ratingValue}} out of 5"
+                    for star in block.stars
+                      span class="nvb-star is-{{star}}" "★"
+                    span.nvb-rating-value "{{block.ratingValue}}/5"
+                  if block.alt
+                    p.nvb-rating-caption "{{block.alt}}"
+                if block.type == "countdown"
+                  if block.alt
+                    p.nvb-cd-title "{{block.alt}}"
+                  if block.target
+                    div.nvb-countdown data-countdown="{{block.target}}"
+                      for unit in block.units
+                        div.nvb-cd-unit
+                          strong data-unit="{{unit.key}}" "{{unit.value}}"
+                          span "{{unit.label}}"
           else
             p "{{post.content}}"
         if allowComments

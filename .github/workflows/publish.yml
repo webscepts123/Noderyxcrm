@@ -21,11 +21,10 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '26'
           registry-url: 'https://registry.npmjs.org'
 
-      # Trusted Publishing requires npm 11.5.1+; Node 22's bundled npm may be
-      # older, so pin an npm version that supports OIDC exchange.
+      # Ensure npm supports Trusted Publishing's OIDC exchange.
       - run: npm install -g npm@^11.5.1
 
       - run: npm ci

@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Updated Noderyx Framework from 0.7.2 to 0.9.0 and required 0.9.x for new installs.
+- Raised the minimum Node.js version to 26 and aligned Docker, publishing, and deployment settings.
+- Visual Builder: animated drag and drop with a floating drag preview, a labeled drop indicator, exact-position drops from the widget library, canvas, and navigator, smooth reorder (FLIP) animations, drop-in and removal effects, edge auto-scroll, and Esc to cancel.
+- Visual Builder: hover toolbar on canvas widgets (drag, duplicate, delete), drag-to-reorder navigator, and keyboard shortcuts (Delete, Ctrl+D, Ctrl+C/V, Alt+↑/↓, Ctrl+Y, Esc).
+- Visual Builder: advanced widget options — scroll-triggered entrance animations with duration and delay, hover effects, border, box shadow, max width, CSS ID anchors, custom CSS classes, and copy/paste style. Style controls now use live sliders and color pickers.
+- Visual Builder: new Video, Gallery, Icon List, Star Rating, and Countdown widgets, plus a "Product launch" template. Published pages load `builder-runtime.js` for animations, counter count-up, progress fills, live countdowns, and video players; without it, content stays fully visible.
+
 ## 1.1.0 — 2026-09-07
 
 - Redesigned the admin workspace around a responsive, green CMS navigation system with a fixed brand and scrollable menus.

@@ -142,7 +142,7 @@ find_node() {
   if [ -n "$NODE_BIN" ] && [ -x "$NODE_BIN" ]; then
     return 0
   fi
-  for candidate in "/opt/alt/alt-nodejs22/root/usr/bin/node" "/opt/alt/alt-nodejs20/root/usr/bin/node" "/opt/cpanel/ea-nodejs22/bin/node" "/opt/cpanel/ea-nodejs20/bin/node" "/usr/local/bin/node" "/usr/bin/node"; do
+  for candidate in "/opt/alt/alt-nodejs26/root/usr/bin/node" "/opt/cpanel/ea-nodejs26/bin/node" "/usr/local/bin/node" "/usr/bin/node"; do
     if [ -x "$candidate" ]; then
       NODE_BIN="$candidate"
       return 0
