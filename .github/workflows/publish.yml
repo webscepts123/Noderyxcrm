@@ -25,7 +25,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       # Ensure npm supports Trusted Publishing's OIDC exchange.
-      - run: npm install -g npm@^11.5.1
+      - run: npm install -g npm@12.2.3
 
       - run: npm ci
 

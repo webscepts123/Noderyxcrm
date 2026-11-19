@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2 — 2026-11-19
+
+- Added admin settings for custom workspace branding and a configurable login URL.
+- Updated the npm publishing workflow to npm 12.2.3.
+
 ## 1.1.1 — 2026-11-05
 
 - Updated Noderyx Framework from 0.7.2 to 0.9.0 and required 0.9.x for new installs.
