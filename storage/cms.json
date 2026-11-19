@@ -104,5 +104,28 @@
       "backups": false,
       "integrations": false
     }
+  },
+  "adminAppearance": {
+    "brandName": "Noderyx CMS",
+    "logoUrl": "",
+    "showBrandName": true,
+    "accentColor": "#237a52",
+    "sidebarBg": "#12271d",
+    "sidebarText": "#d9e6de",
+    "sidebarActive": "#37c684",
+    "toolbarBg": "#12271d",
+    "toolbarText": "#e4e7eb",
+    "loginBg": "#10291d",
+    "loginBgEnd": "#276a4b",
+    "loginCardBg": "#ffffff",
+    "loginText": "#17221c",
+    "widgetBg": "#ffffff",
+    "widgetText": "#17221c",
+    "widgetAccent": "#237a52",
+    "welcomeBg": "#ffffff",
+    "welcomeText": "#17221c"
+  },
+  "adminSecurity": {
+    "loginSlug": ""
   }
 }

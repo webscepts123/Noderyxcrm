@@ -31,6 +31,45 @@ const PERMISSION_CATALOG = [
 ];
 const ADMIN_ONLY_PERMISSIONS = ["settings", "themes", "plugins", "backups", "integrations"];
 
+export const DEFAULT_LOGIN_PATH = "/nodecms/login";
+// Single path segments the public site, CMS, or framework already answer, so a
+// custom login slug can never shadow them.
+const RESERVED_SLUGS = ["nodecms", "public", "post", "page", "category", "health", "builder-style", "admin-theme.css", "uploads", "api", "login", "admin", "__noderyx", "__untitled"];
+const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+const UPLOAD_TYPES = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp" };
+
+// Every colour the admin appearance screen can change, with its default (the
+// stock Noderyx palette) so a blank or reset field falls back cleanly.
+export const ADMIN_APPEARANCE_DEFAULTS = Object.freeze({
+  brandName: "Noderyx CMS",
+  logoUrl: "",
+  showBrandName: true,
+  accentColor: "#237a52",
+  sidebarBg: "#12271d",
+  sidebarText: "#d9e6de",
+  sidebarActive: "#37c684",
+  toolbarBg: "#12271d",
+  toolbarText: "#e4e7eb",
+  loginBg: "#10291d",
+  loginBgEnd: "#276a4b",
+  loginCardBg: "#ffffff",
+  loginText: "#17221c",
+  widgetBg: "#ffffff",
+  widgetText: "#17221c",
+  widgetAccent: "#237a52",
+  welcomeBg: "#ffffff",
+  welcomeText: "#17221c"
+});
+const APPEARANCE_COLORS = Object.keys(ADMIN_APPEARANCE_DEFAULTS).filter((key) => HEX_COLOR.test(String(ADMIN_APPEARANCE_DEFAULTS[key])));
+
+export function validateLoginSlug(value) {
+  const slug = String(value ?? "").trim().toLowerCase().replace(/^\/+|\/+$/g, "");
+  if (!slug) return "";
+  if (!/^[a-z0-9][a-z0-9-]{2,63}$/.test(slug)) throw new Error("Use 3–64 lowercase letters, numbers, or hyphens for the login URL.");
+  if (RESERVED_SLUGS.includes(slug)) throw new Error(`"/${slug}" is already used by the site. Choose another login URL.`);
+  return slug;
+}
+
 export class CmsStore {
   constructor(file = join(process.cwd(), "storage", "cms.json")) {
     this.file = file;
@@ -48,6 +87,7 @@ export class CmsStore {
     try {
       const data = JSON.parse(await readFile(this.file, "utf8"));
       if (this.normalize(data)) await this.save(data);
+      else this.loginSlug = String(data.adminSecurity?.loginSlug ?? "");
     } catch (error) {
       if (error?.code !== "ENOENT") throw error;
       const createdAt = now();
@@ -61,6 +101,8 @@ export class CmsStore {
         menus: [{ id: 1, name: "Primary", location: "primary", items: [{ id: 1, label: "Home", url: "/", order: 1 }] }],
         revisions: [],
         integrations: {},
+        adminAppearance: { ...ADMIN_APPEARANCE_DEFAULTS },
+        adminSecurity: { loginSlug: "" },
         rolePermissions: Object.fromEntries(ROLES.map((role) => [role, this.defaultPermissionsFor(role)]))
       });
     }
@@ -77,6 +119,9 @@ export class CmsStore {
     const settings = { metaTitle: "", metaDescription: data.settings.description ?? "", socialImage: "", indexSite: true };
     for (const [key, value] of Object.entries(settings)) if (data.settings[key] === undefined) { data.settings[key] = value; changed = true; }
     if (!data.integrations || typeof data.integrations !== "object") { data.integrations = {}; changed = true; }
+    if (!data.adminAppearance || typeof data.adminAppearance !== "object") { data.adminAppearance = {}; changed = true; }
+    for (const [key, value] of Object.entries(ADMIN_APPEARANCE_DEFAULTS)) if (data.adminAppearance[key] === undefined) { data.adminAppearance[key] = value; changed = true; }
+    if (!data.adminSecurity || typeof data.adminSecurity !== "object") { data.adminSecurity = { loginSlug: "" }; changed = true; }
     if (!data.rolePermissions || typeof data.rolePermissions !== "object") { data.rolePermissions = {}; changed = true; }
     for (const role of ROLES) {
       const defaults = this.defaultPermissionsFor(role);
@@ -92,6 +137,9 @@ export class CmsStore {
 
   async read() { return JSON.parse(await readFile(this.file, "utf8")); }
   async save(data) {
+    // The auth middleware runs synchronously on every request, so it reads the
+    // login slug from memory. Every write goes through here, which keeps it fresh.
+    this.loginSlug = typeof data?.adminSecurity?.loginSlug === "string" ? data.adminSecurity.loginSlug : "";
     this.queue = this.queue.then(async () => {
       const temporary = `${this.file}.tmp`;
       await writeFile(temporary, JSON.stringify(data, null, 2));
@@ -178,24 +226,55 @@ export class CmsStore {
 
   async deletePost(id) { return this.mutate((data) => { data.posts = data.posts.filter((p) => p.id !== Number(id)); }); }
   async addCategory(input) { return this.mutate((data) => data.categories.push({ id: Math.max(0, ...data.categories.map((c) => c.id)) + 1, name: String(input.name).trim(), slug: slugify(input.slug || input.name), description: String(input.description ?? "").trim() })); }
+  async storeImageUpload(dataUrl, name) {
+    const match = String(dataUrl).match(/^data:(image\/(?:png|jpeg|gif|webp));base64,([A-Za-z0-9+/=]+)$/);
+    if (!match) throw new Error("Unsupported image upload");
+    const directory = join(process.cwd(), "public", "uploads");
+    await mkdir(directory, { recursive: true });
+    const filename = `${Date.now()}-${slugify(name || "image")}.${UPLOAD_TYPES[match[1]]}`;
+    await writeFile(join(directory, filename), Buffer.from(match[2], "base64"));
+    return `/public/uploads/${filename}`;
+  }
   async addMedia(input) {
     let url = String(input.url ?? "").trim();
-    if (input.dataUrl) {
-      const match = String(input.dataUrl).match(/^data:(image\/(?:png|jpeg|gif|webp));base64,([A-Za-z0-9+/=]+)$/);
-      if (!match) throw new Error("Unsupported image upload");
-      const extension = { "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp" }[match[1]];
-      const directory = join(process.cwd(), "public", "uploads");
-      await mkdir(directory, { recursive: true });
-      const filename = `${Date.now()}-${slugify(input.title || input.filename || "image")}.${extension}`;
-      await writeFile(join(directory, filename), Buffer.from(match[2], "base64"));
-      url = `/public/uploads/${filename}`;
-    }
+    if (input.dataUrl) url = await this.storeImageUpload(input.dataUrl, input.title || input.filename);
     if (!url) throw new Error("Media URL or file is required");
     return this.mutate((data) => data.media.push({ id: Math.max(0, ...data.media.map((m) => m.id)) + 1, title: String(input.title || input.filename || "Image").trim(), url, alt: String(input.alt ?? "").trim(), createdAt: now() }));
   }
   async deleteMedia(id) { return this.mutate((data) => { data.media = data.media.filter((item) => item.id !== Number(id)); }); }
 
   async saveSettings(input) { return this.mutate((data) => { data.settings = { ...data.settings, siteName: String(input.siteName).trim(), tagline: String(input.tagline).trim(), description: String(input.description).trim(), theme: String(input.theme || data.settings.theme || "default"), metaTitle: String(input.metaTitle ?? "").trim(), metaDescription: String(input.metaDescription ?? "").trim(), socialImage: String(input.socialImage ?? "").trim(), indexSite: input.indexSite === "on" }; }); }
+  /** Path of the sign-in screen: the custom slug when one is set, otherwise the default. */
+  loginPath() { return this.loginSlug ? `/${this.loginSlug}` : DEFAULT_LOGIN_PATH; }
+  async adminAppearance() { const data = await this.read(); return { ...ADMIN_APPEARANCE_DEFAULTS, ...(data.adminAppearance ?? {}) }; }
+  async adminSecurity() { const data = await this.read(); return { loginSlug: "", ...(data.adminSecurity ?? {}) }; }
+
+  async saveAdminAppearance(input) {
+    let uploaded = "";
+    if (input.logoDataUrl) uploaded = await this.storeImageUpload(input.logoDataUrl, "admin-logo");
+    const logoUrl = String(input.logoUrl ?? "").trim();
+    // The CSP only allows same-origin images, so the logo must live on this site
+    // (an upload or a media library item).
+    if (logoUrl && !/^\/(?!\/)[^\s"'()<>\\]+$/.test(logoUrl)) throw new Error("The logo must be a path on this site, such as /public/uploads/logo.png. Upload it or add it to the media library first.");
+    return this.mutate((data) => {
+      const current = { ...ADMIN_APPEARANCE_DEFAULTS, ...(data.adminAppearance ?? {}) };
+      if (input.reset === "1") { data.adminAppearance = { ...ADMIN_APPEARANCE_DEFAULTS }; return data.adminAppearance; }
+      const next = { ...current, brandName: String(input.brandName ?? "").trim().slice(0, 60) || ADMIN_APPEARANCE_DEFAULTS.brandName, showBrandName: input.showBrandName === "on" };
+      next.logoUrl = input.removeLogo === "on" ? "" : (uploaded || logoUrl);
+      // An invalid colour keeps the stored value instead of breaking the stylesheet.
+      for (const key of APPEARANCE_COLORS) if (HEX_COLOR.test(String(input[key] ?? ""))) next[key] = String(input[key]).toLowerCase();
+      next.updatedAt = now();
+      data.adminAppearance = next;
+      return next;
+    });
+  }
+
+  async saveLoginSlug(value) {
+    const loginSlug = validateLoginSlug(value);
+    await this.mutate((data) => { data.adminSecurity = { ...(data.adminSecurity ?? {}), loginSlug }; });
+    return loginSlug;
+  }
+
   async activateTheme(id) { return this.mutate((data) => { data.settings.theme = String(id); }); }
 
   async addUser(input) { return this.mutate((data) => { const email = String(input.email).trim().toLowerCase(); if (data.users.some((u) => u.email.toLowerCase() === email)) throw new Error("Email already exists"); data.users.push({ id: Math.max(0, ...data.users.map((u) => u.id)) + 1, name: String(input.name).trim(), email, password: hashPassword(String(input.password)), role: ["Administrator", "Editor", "Author"].includes(input.role) ? input.role : "Author", createdAt: now() }); }); }

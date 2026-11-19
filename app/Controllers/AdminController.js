@@ -1,9 +1,12 @@
 import { Controller } from "noderyx-framework";
+import { buildAdminThemeCss } from "../Services/AdminTheme.js";
+import { DEFAULT_LOGIN_PATH } from "../Services/CmsStore.js";
 
 export class AdminController extends Controller {
   store() { return this.service("cms"); }
   get user() { return this.context.session.user; }
-  guard() { if (!this.user) { this.redirect("/nodecms/login"); return false; } return true; }
+  get loginPath() { return this.store().loginPath(); }
+  guard() { if (!this.user) { if (this.loginPath === DEFAULT_LOGIN_PATH) this.redirect(this.loginPath); else this.context.abort(404); return false; } return true; }
   adminGuard() { if (!this.guard()) return false; if (this.user.role !== "Administrator") { this.context.abort(403, "Administrator access is required"); return false; } return true; }
   async permissionGuard(permission) {
     if (!this.guard()) return false;
@@ -14,9 +17,60 @@ export class AdminController extends Controller {
     this.context.response.baseHeaders.location = location;
     return this.context.text("", 303);
   }
+  /** Every admin view gets the branding (logo, name, stylesheet version) and the current login path. */
+  async render(view, data = {}, status = 200) {
+    const appearance = await this.store().adminAppearance();
+    const admin = {
+      brandName: appearance.brandName,
+      logoUrl: appearance.logoUrl,
+      showBrandName: appearance.showBrandName,
+      version: encodeURIComponent(appearance.updatedAt ?? "1")
+    };
+    return super.render(view, { admin, loginPath: this.loginPath, ...data }, status);
+  }
   async login() { if (this.user) return this.redirect("/nodecms"); return this.render("admin/login", { error: this.query.error === "1" }); }
-  async authenticate() { const user = await this.store().authenticate(this.body.email, this.body.password); if (!user) return this.redirect("/nodecms/login?error=1"); this.context.session.user = user; return this.redirect("/nodecms"); }
-  async logout() { delete this.context.session.user; return this.redirect("/nodecms/login"); }
+  async authenticate() { const user = await this.store().authenticate(this.body.email, this.body.password); if (!user) return this.redirect(`${this.loginPath}?error=1`); this.context.session.user = user; return this.redirect("/nodecms"); }
+  async logout() { delete this.context.session.user; return this.redirect(this.loginPath); }
+  isCustomLoginRequest() { return this.loginPath !== DEFAULT_LOGIN_PATH && `/${String(this.params.loginSlug ?? "").toLowerCase()}` === this.loginPath; }
+  async customLogin() { if (!this.isCustomLoginRequest()) return this.abort(404); return this.login(); }
+  async customAuthenticate() { if (!this.isCustomLoginRequest()) return this.abort(404); return this.authenticate(); }
+  // Public (the login screen needs it); the URL carries a version so browsers refetch after a change.
+  async adminThemeCss() { return this.text(buildAdminThemeCss(await this.store().adminAppearance()), 200, "text/css; charset=utf-8"); }
+  async adminSettings() {
+    if (!this.adminGuard()) return;
+    const store = this.store();
+    const appearance = await store.adminAppearance();
+    const { loginSlug } = await store.adminSecurity();
+    const origin = `${this.request.headers["x-forwarded-proto"] === "https" ? "https" : "http"}://${this.request.headers.host ?? "localhost"}`;
+    const notices = { appearance: "Admin appearance saved.", reset: "Admin appearance reset to the default colours.", login: "Login URL saved. Bookmark the new address — the old one now returns 404." };
+    const field = (key, label) => ({ key, label, value: appearance[key] });
+    const colorGroups = [
+      { id: "menus", title: "Sidebar menu & toolbar", hint: "The left navigation menu and the top admin bar.", fields: [field("sidebarBg", "Menu background"), field("sidebarText", "Menu text"), field("sidebarActive", "Active item & icon"), field("toolbarBg", "Toolbar background"), field("toolbarText", "Toolbar text"), field("accentColor", "Buttons & links")] },
+      { id: "login", title: "Login screen", hint: "The sign-in page background is a two-colour gradient.", fields: [field("loginBg", "Background (start)"), field("loginBgEnd", "Background (end)"), field("loginCardBg", "Card background"), field("loginText", "Card text")] },
+      { id: "widgets", title: "Dashboard widgets", hint: "Stat cards, panels, and the welcome banner on the dashboard.", fields: [field("widgetBg", "Widget background"), field("widgetText", "Widget text"), field("widgetAccent", "Numbers & links"), field("welcomeBg", "Welcome banner background"), field("welcomeText", "Welcome banner text")] }
+    ];
+    const { data } = await store.dashboard();
+    const mediaImages = data.media.filter((item) => /\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(item.url)).map((item) => ({ url: item.url, title: item.title }));
+    return this.render("admin/admin-settings", {
+      user: this.user, appearance, loginSlug, origin, colorGroups, mediaImages, hasMedia: mediaImages.length > 0,
+      loginUrl: `${origin}${this.loginPath}`,
+      customLogin: Boolean(loginSlug),
+      notice: notices[this.query.saved] ?? "",
+      error: this.query.error ? String(this.query.error).slice(0, 200) : ""
+    });
+  }
+  async saveAdminAppearance() {
+    if (!this.adminGuard()) return;
+    try { await this.store().saveAdminAppearance(this.body); }
+    catch (error) { return this.redirect(`/nodecms/admin-settings?error=${encodeURIComponent(error.message)}`); }
+    return this.redirect(`/nodecms/admin-settings?saved=${this.body.reset === "1" ? "reset" : "appearance"}`);
+  }
+  async saveLoginUrl() {
+    if (!this.adminGuard()) return;
+    try { await this.store().saveLoginSlug(this.body.reset === "1" ? "" : this.body.loginSlug); }
+    catch (error) { return this.redirect(`/nodecms/admin-settings?error=${encodeURIComponent(error.message)}#login-url`); }
+    return this.redirect("/nodecms/admin-settings?saved=login#login-url");
+  }
   async dashboard() { if (!this.guard()) return; const { data, counts } = await this.store().dashboard(); return this.render("admin/dashboard", { user: this.user, counts, posts: data.posts.slice().reverse().slice(0, 6) }); }
   async posts() {
     if (!(await this.permissionGuard("content"))) return;

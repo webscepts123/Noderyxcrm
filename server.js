@@ -4,7 +4,7 @@ import { CmsStore } from "./app/Services/CmsStore.js";
 import { ThemeManager } from "./app/Services/ThemeManager.js";
 import { PluginManager } from "./app/Services/PluginManager.js";
 import { ArchiveInstaller } from "./app/Services/ArchiveInstaller.js";
-import { registerCmsRoutes, requireCmsAuthentication } from "./routes/cms.js";
+import { registerCmsRoutes, registerLoginRoutes, requireCmsAuthentication } from "./routes/cms.js";
 import { registerWebRoutes } from "./routes/web.js";
 
 loadEnvironment();
@@ -38,6 +38,8 @@ registerWebRoutes(app);
 registerCmsRoutes(app);
 // Local plugins under packages/ load unless they were deactivated on the Plugins screen.
 await loadPackages(app, [...await plugins.enabledLocalPackages(), ...config.packages], { config, discover: false });
+// Last, so the custom login URL catch-all never shadows a site or plugin route.
+registerLoginRoutes(app);
 
 // Phusion Passenger (cPanel) may hand the application a unix socket path in
 // PORT instead of a number, so only treat a numeric value as a TCP port.

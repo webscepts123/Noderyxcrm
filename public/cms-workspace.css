@@ -28,3 +28,21 @@
 .workspace-columns{grid-template-columns:minmax(260px,340px) minmax(0,1fr)}
 .workspace-items{display:grid;gap:16px}.workspace-item{padding:18px;border:1px solid var(--line);border-radius:4px;min-width:0}.workspace-item h2{overflow-wrap:anywhere}.workspace-details{white-space:pre-wrap;overflow-wrap:anywhere}.workspace-item .muted{font-size:12px}.workspace-item .panel-head{gap:14px}.workspace-item .status{white-space:nowrap}
 @media(max-width:900px){.workspace-columns{grid-template-columns:1fr}.nrx-rail .sidebar .admin-brand{font-size:17px}}
+/* Admin settings — branding, colours, login URL */
+.admin-settings-form{margin-bottom:22px}.admin-settings-form h2{font-size:18px}
+.admin-logo-row{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;align-items:start}
+.admin-logo-preview{min-height:120px;display:grid;place-items:center;padding:16px;border:1px dashed var(--line);border-radius:8px;background:var(--dark);text-align:center}
+.admin-logo-preview img{max-width:100%;max-height:90px;object-fit:contain}.admin-logo-preview .muted{color:#ffffffaa;font-size:13px}
+.field-hint{margin:-4px 0 0;color:var(--muted);font-size:13px}.field-hint.is-error{color:var(--danger);font-weight:600}
+.color-group{padding-top:18px;border-top:1px solid var(--line)}.color-group .panel-head{margin-bottom:14px;gap:16px;flex-wrap:wrap}
+.color-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.color-field{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:13px}
+.color-input{display:flex;align-items:center;gap:8px}
+.color-input input[type=color]{width:44px;height:40px;padding:3px;cursor:pointer;flex:none}
+.color-input input[type=text]{flex:1;min-width:0;font-family:ui-monospace,monospace;text-transform:lowercase}
+.form-actions{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.slug-input{display:flex;align-items:stretch;border:1px solid #ccd7d0;border-radius:8px;overflow:hidden;background:#fff}
+.slug-prefix{padding:11px 0 11px 13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:50%}
+.slug-input input{border:0;border-radius:0;flex:1;min-width:0;padding-left:2px}
+.login-url-current{word-break:break-all}
+@media (max-width:760px){.admin-logo-row{grid-template-columns:1fr}}

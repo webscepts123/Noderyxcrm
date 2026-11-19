@@ -1,0 +1,129 @@
+html lang="en"
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title "Admin settings — {{admin.brandName}}"
+    link rel="stylesheet" href="/public/cms.css"
+    link rel="stylesheet" href="/public/cms-workspace.css"
+    link rel="stylesheet" href="/admin-theme.css?v={{admin.version}}"
+    script src="/public/cms-admin.js" defer=""
+  body.admin-body
+    div.sidebar
+      if admin.logoUrl
+        a.admin-brand.has-logo href="/nodecms" aria-label="{{admin.brandName}}"
+          img.admin-logo src="{{admin.logoUrl}}" alt="{{admin.brandName}}"
+          if admin.showBrandName
+            span "{{admin.brandName}}"
+      else
+        a.admin-brand href="/nodecms" "{{admin.brandName}}"
+      nav.admin-nav
+        a href="/nodecms" "Dashboard"
+        p.nav-section "Content"
+        a href="/nodecms/posts" "Posts"
+        a href="/nodecms/posts?type=page" "Pages"
+        a href="/nodecms/media" "Media"
+        a href="/nodecms/categories" "Categories"
+        a href="/nodecms/comments" "Comments"
+        p.nav-section "Workspace"
+        a href="/nodecms/workspace/tasks" "Editorial tasks"
+        a href="/nodecms/workspace/notes" "Team notes"
+        p.nav-section "Appearance"
+        a href="/nodecms/menus" "Menus"
+        a href="/nodecms/themes" "Themes"
+        a href="/nodecms/plugins" "Plugins"
+        p.nav-section "System"
+        a href="/nodecms/users" "Users"
+        a href="/nodecms/roles" "Roles & permissions"
+        a href="/nodecms/backups" "Backups"
+        a href="/nodecms/integrations" "Integrations"
+        a href="/nodecms/settings" "Settings & SEO"
+        a.active href="/nodecms/admin-settings" "Admin settings"
+      form.logout method="post" action="/nodecms/logout"
+        input type="hidden" name="_csrf" value="{{csrfToken}}"
+        button type="submit" "Sign out"
+    a.skip-link href="#workspace" "Skip to content"
+    header.cms-toolbar
+      a.toolbar-site href="/" "N / Visit site ↗"
+      span.toolbar-label "Administration"
+      a.toolbar-new href="/nodecms/posts/new" "+ New content"
+      span.toolbar-user "{{user.name}}"
+    main.admin-main id="workspace"
+      header.admin-top
+      header.admin-top
+        div
+          p.kicker "Administration"
+          h1 "Admin settings"
+          p.muted "Brand the admin panel and choose a private login address."
+      if notice
+        p.notice.success "{{notice}}"
+      if error
+        p.notice.error "{{error}}"
+      form.panel.stack.admin-settings-form method="post" action="/nodecms/admin-settings/appearance" data-admin-appearance=""
+        input type="hidden" name="_csrf" value="{{csrfToken}}"
+        input type="hidden" name="logoDataUrl" value="" data-logo-data=""
+        div.panel-head
+          h2 id="branding" "Logo & name"
+          span.muted "Sidebar and login screen"
+        div.admin-logo-row
+          div.admin-logo-preview data-logo-preview=""
+            if appearance.logoUrl
+              img src="{{appearance.logoUrl}}" alt="Current logo"
+            else
+              span.muted "No logo — the name is shown instead"
+          div.stack
+            label "Admin panel name"
+              input name="brandName" value="{{appearance.brandName}}" maxlength="60" required=""
+            label "Upload a logo"
+              input type="file" accept="image/png,image/jpeg,image/gif,image/webp" data-logo-file=""
+            p.field-hint data-logo-message="" "PNG, JPG, GIF or WebP, up to 150 KB. Wide logos around 360 × 80 px look best."
+            if hasMedia
+              label "…or pick from the media library"
+                select data-logo-media=""
+                  option value="" "Choose an image"
+                  for image in mediaImages
+                    option value="{{image.url}}" "{{image.title}}"
+            label "…or enter an image path on this site"
+              input name="logoUrl" value="{{appearance.logoUrl}}" placeholder="/public/uploads/logo.png" data-logo-url=""
+            label.checkbox-row
+              if appearance.showBrandName
+                input type="checkbox" name="showBrandName" checked=""
+              else
+                input type="checkbox" name="showBrandName"
+              span "Show the name next to the logo"
+            if appearance.logoUrl
+              label.checkbox-row
+                input type="checkbox" name="removeLogo"
+                span "Remove the logo"
+        for group in colorGroups
+          div.color-group
+            div.panel-head
+              h2 id="{{group.id}}" "{{group.title}}"
+              span.muted "{{group.hint}}"
+            div.color-grid
+              for field in group.fields
+                label.color-field
+                  span "{{field.label}}"
+                  span.color-input
+                    input type="color" name="{{field.key}}" value="{{field.value}}" data-color-sync=""
+                    input type="text" value="{{field.value}}" maxlength="7" pattern="#[0-9a-fA-F]{6}" aria-label="{{field.label}} hex value" data-color-text=""
+        div.form-actions
+          button.primary type="submit" "Save appearance"
+          button.linklike type="submit" name="reset" value="1" formnovalidate="" data-confirm="Reset every admin colour and the logo to the defaults?" "Reset to defaults"
+      form.panel.stack.admin-settings-form id="login-url" method="post" action="/nodecms/admin-settings/login-url"
+        input type="hidden" name="_csrf" value="{{csrfToken}}"
+        div.panel-head
+          h2 "Login URL"
+          span.muted "Security"
+        p.muted "Move the sign-in page to a private address. Once set, the default /nodecms/login address returns 404, and signed-out visitors to /nodecms are no longer redirected to the login form."
+        p
+          span "Current login address: "
+          strong.login-url-current "{{loginUrl}}"
+        label "Custom login path"
+          span.slug-input
+            span.slug-prefix "{{origin}}/"
+            input name="loginSlug" value="{{loginSlug}}" placeholder="my-secret-login" maxlength="64" autocomplete="off"
+        p.field-hint "3–64 lowercase letters, numbers, or hyphens. Leave empty to use /nodecms/login. Bookmark the new address before you sign out. If you lose it, delete adminSecurity.loginSlug from storage/cms.json and restart the app."
+        div.form-actions
+          button.primary type="submit" data-confirm="Change the login URL? You will need the new address to sign in next time." "Save login URL"
+          if customLogin
+            button.linklike type="submit" name="reset" value="1" formnovalidate="" data-confirm="Restore the default /nodecms/login address?" "Restore default URL"

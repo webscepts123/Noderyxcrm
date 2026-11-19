@@ -5,10 +5,17 @@ html lang="en"
     title "Backups — Noderyx CMS"
     link rel="stylesheet" href="/public/cms.css"
     link rel="stylesheet" href="/public/cms-workspace.css"
+    link rel="stylesheet" href="/admin-theme.css?v={{admin.version}}"
     script src="/public/cms-admin.js" defer=""
   body.admin-body
     div.sidebar
-      a.admin-brand href="/nodecms" "Noderyx CMS"
+      if admin.logoUrl
+        a.admin-brand.has-logo href="/nodecms" aria-label="{{admin.brandName}}"
+          img.admin-logo src="{{admin.logoUrl}}" alt="{{admin.brandName}}"
+          if admin.showBrandName
+            span "{{admin.brandName}}"
+      else
+        a.admin-brand href="/nodecms" "{{admin.brandName}}"
       nav.admin-nav
         a href="/nodecms" "Dashboard"
         p.nav-section "Content"
@@ -30,6 +37,7 @@ html lang="en"
         a.active href="/nodecms/backups" "Backups"
         a href="/nodecms/integrations" "Integrations"
         a href="/nodecms/settings" "Settings & SEO"
+        a href="/nodecms/admin-settings" "Admin settings"
       form.logout method="post" action="/nodecms/logout"
         input type="hidden" name="_csrf" value="{{csrfToken}}"
         button type="submit" "Sign out"

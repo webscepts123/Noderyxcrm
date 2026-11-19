@@ -1,6 +1,12 @@
 import { AdminController } from "../app/Controllers/AdminController.js";
+import { DEFAULT_LOGIN_PATH } from "../app/Services/CmsStore.js";
 
 export const CMS_PATH = "/nodecms";
+
+/** The current sign-in path, which administrators can rename under Admin settings. */
+export function currentLoginPath(context) {
+  return context.service?.("cms")?.loginPath?.() ?? DEFAULT_LOGIN_PATH;
+}
 
 /**
  * Protect the complete CMS namespace before requests reach a controller.
@@ -10,12 +16,29 @@ export const CMS_PATH = "/nodecms";
 export function requireCmsAuthentication(context, next) {
   const pathname = new URL(context.request.url, "http://localhost").pathname;
   const isCmsRequest = pathname === CMS_PATH || pathname.startsWith(`${CMS_PATH}/`);
-  const isLoginRequest = pathname === `${CMS_PATH}/login`;
+  const loginPath = currentLoginPath(context);
+  const customLogin = loginPath !== DEFAULT_LOGIN_PATH;
+  const isDefaultLogin = pathname.replace(/\/$/, "") === DEFAULT_LOGIN_PATH;
 
-  if (!isCmsRequest || isLoginRequest || context.session?.user) return next();
+  // With a custom login URL, the old one disappears entirely.
+  if (isDefaultLogin && customLogin) return context.abort(404);
+  if (!isCmsRequest || isDefaultLogin || context.session?.user) return next();
 
-  context.response.baseHeaders.location = `${CMS_PATH}/login`;
+  // A redirect would reveal the hidden login URL, so signed-out visitors get a 404.
+  if (customLogin) return context.abort(404);
+  context.response.baseHeaders.location = loginPath;
   return context.text("", 303);
+}
+
+/**
+ * Serve the custom login URL. These single-segment catch-alls must be
+ * registered after every other route (including plugin routes) so they only
+ * see paths nothing else claimed; the controller 404s anything that is not the
+ * configured slug.
+ */
+export function registerLoginRoutes(app) {
+  app.get("/:loginSlug", AdminController.handle("customLogin"));
+  app.post("/:loginSlug", AdminController.handle("customAuthenticate"));
 }
 
 export function registerCmsRoutes(app) {
@@ -37,6 +60,10 @@ export function registerCmsRoutes(app) {
   app.get(`${CMS_PATH}/media`, AdminController.handle("media"));
   app.post(`${CMS_PATH}/media`, AdminController.handle("addMedia"));
   app.post(`${CMS_PATH}/media/:id/delete`, AdminController.handle("deleteMedia"));
+  app.get("/admin-theme.css", AdminController.handle("adminThemeCss"));
+  app.get(`${CMS_PATH}/admin-settings`, AdminController.handle("adminSettings"));
+  app.post(`${CMS_PATH}/admin-settings/appearance`, AdminController.handle("saveAdminAppearance"));
+  app.post(`${CMS_PATH}/admin-settings/login-url`, AdminController.handle("saveLoginUrl"));
   app.get(`${CMS_PATH}/settings`, AdminController.handle("settings"));
   app.post(`${CMS_PATH}/settings`, AdminController.handle("saveSettings"));
   app.get(`${CMS_PATH}/themes`, AdminController.handle("themes"));

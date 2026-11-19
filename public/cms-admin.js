@@ -650,3 +650,85 @@ document.querySelectorAll('form[data-confirm]').forEach(form => {
     if (location.hash === '#add-plugin') setOpen(true);
   }
 })();
+
+// Admin settings: logo upload/preview, colour picker ↔ hex text sync, confirm buttons.
+(() => {
+  for (const button of document.querySelectorAll('button[data-confirm]')) {
+    button.addEventListener('click', (event) => {
+      if (!window.confirm(button.dataset.confirm)) event.preventDefault();
+    });
+  }
+
+  for (const picker of document.querySelectorAll('[data-color-sync]')) {
+    const text = picker.parentElement.querySelector('[data-color-text]');
+    if (!text) continue;
+    picker.addEventListener('input', () => { text.value = picker.value; });
+    text.addEventListener('input', () => {
+      const value = text.value.trim();
+      if (/^#[0-9a-f]{6}$/i.test(value)) picker.value = value.toLowerCase();
+    });
+  }
+
+  const form = document.querySelector('[data-admin-appearance]');
+  if (!form) return;
+  const preview = form.querySelector('[data-logo-preview]');
+  const urlInput = form.querySelector('[data-logo-url]');
+  const dataInput = form.querySelector('[data-logo-data]');
+  const fileInput = form.querySelector('[data-logo-file]');
+  const mediaSelect = form.querySelector('[data-logo-media]');
+  const message = form.querySelector('[data-logo-message]');
+  const defaultMessage = message?.textContent ?? '';
+  const MAX_BYTES = 150 * 1024;
+
+  const showPreview = (src) => {
+    if (!preview) return;
+    preview.replaceChildren();
+    if (!src) {
+      const empty = document.createElement('span');
+      empty.className = 'muted';
+      empty.textContent = 'No logo — the name is shown instead';
+      preview.append(empty);
+      return;
+    }
+    const image = document.createElement('img');
+    image.alt = 'Logo preview';
+    image.src = src;
+    preview.append(image);
+  };
+
+  fileInput?.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    dataInput.value = '';
+    if (message) { message.textContent = defaultMessage; message.classList.remove('is-error'); }
+    if (!file) return;
+    if (!/^image\/(png|jpeg|gif|webp)$/.test(file.type) || file.size > MAX_BYTES) {
+      fileInput.value = '';
+      if (message) {
+        message.textContent = 'Choose a PNG, JPG, GIF or WebP image under 150 KB. For larger files, upload to Media and pick it from the library.';
+        message.classList.add('is-error');
+      }
+      return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      dataInput.value = String(reader.result);
+      if (urlInput) urlInput.value = '';
+      if (mediaSelect) mediaSelect.value = '';
+      showPreview(dataInput.value);
+    });
+    reader.readAsDataURL(file);
+  });
+
+  mediaSelect?.addEventListener('change', () => {
+    if (!mediaSelect.value) return;
+    if (urlInput) urlInput.value = mediaSelect.value;
+    dataInput.value = '';
+    if (fileInput) fileInput.value = '';
+    showPreview(mediaSelect.value);
+  });
+
+  urlInput?.addEventListener('change', () => {
+    dataInput.value = '';
+    showPreview(urlInput.value.trim());
+  });
+})();
